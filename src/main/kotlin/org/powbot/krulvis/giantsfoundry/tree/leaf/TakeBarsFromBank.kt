@@ -16,7 +16,6 @@ class TakeBarsFromBank(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Tak
             waitFor { !script.mouldWidgetOpen() }
         }
         if (openBank()) {
-            script.log.info("Bars to use: " + script.barsToUse)
             script.barsToUse
                 .map { Pair(it.first, it.second - script.crucibleBarCount(it.first)) }
                 .forEach { (bar, amount) ->
