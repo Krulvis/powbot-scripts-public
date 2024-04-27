@@ -148,5 +148,5 @@ class GiantsFoundry : ATScript() {
 }
 
 fun main() {
-    GiantsFoundry().startScript("127.0.0.1", "", true)
+    GiantsFoundry().startScript("127.0.0.1", "GIM", true)
 }
