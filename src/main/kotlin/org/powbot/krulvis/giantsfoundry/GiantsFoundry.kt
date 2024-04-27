@@ -31,8 +31,7 @@ import org.powbot.krulvis.giantsfoundry.tree.branch.IsSmithing
         ScriptConfiguration(
             "Inventory", "What bars do you want to smelt?",
             optionType = OptionType.INVENTORY,
-//            defaultValue = "{\"1334\":7,\"1339\":7}"
-            defaultValue = "{\"2349\":28}"
+            defaultValue = "{\"1334\":7,\"1339\":7}"
         )
     ]
 )
