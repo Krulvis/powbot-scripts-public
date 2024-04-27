@@ -10,7 +10,6 @@ import org.powbot.api.script.ScriptManifest
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.debug
 import org.powbot.krulvis.api.ATContext.me
-import org.powbot.krulvis.api.extensions.items.Bar
 import org.powbot.krulvis.api.extensions.items.GiantsFoundryItem
 import org.powbot.krulvis.api.script.ATScript
 import org.powbot.krulvis.api.script.painter.ATPaint
@@ -51,10 +50,10 @@ class GiantsFoundry : ATScript() {
     override val rootComponent: TreeComponent<*> = IsSmithing(this)
 //    override val rootComponent: TreeComponent<*> = SimpleLeaf(this, "SimpleLeaf") { sleep(2000) }
 
-    fun getInvBar() = Inventory.stream().id(*GiantsFoundryItem.METAL_ITEMS.map { it.id }.toIntArray()).firstOrNull()
+    fun getInvBar() = Inventory.stream().id(*GiantsFoundryItem.values().map { it.id }.toIntArray()).firstOrNull()
 
     fun crucibleBars(): List<Pair<GiantsFoundryItem, Int>> {
-        return GiantsFoundryItem.METAL_ITEMS.map { it to it.giantsFoundryCount }.filter { it.second > 0 }
+        return GiantsFoundryItem.METAL_BARS.map { it to it.giantsFoundryCount }.filter { it.second > 0 }
     }
 
     fun crucibleBarCount(bar: GiantsFoundryItem): Int = crucibleBars().firstOrNull { it.first == bar }?.second ?: 0

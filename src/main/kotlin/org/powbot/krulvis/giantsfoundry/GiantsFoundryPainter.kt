@@ -28,7 +28,7 @@ class GiantsFoundryPainter(script: GiantsFoundry) : ATPaint<GiantsFoundry>(scrip
 //            .addString("Tips") { MouldType.Tips.selected().toString(2) }
 //            .addString("SelectedAll") { MouldType.selectedAll().toString() }
 //            .addString("OpenPage") { MouldType.openPage().toString() }
-        GiantsFoundryItem.METAL_ITEMS.forEachIndexed { index, bar ->
+        GiantsFoundryItem.METAL_BARS.forEachIndexed { index, bar ->
             paintBuilder.addString(bar.name) { "${bar.giantsFoundryCount}" }
         }
         return paintBuilder.build()
