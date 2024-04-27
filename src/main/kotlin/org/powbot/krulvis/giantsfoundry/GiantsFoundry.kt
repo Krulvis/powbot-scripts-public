@@ -45,7 +45,6 @@ class GiantsFoundry : ATScript() {
     var currentAction: Action? = null
     val barsToUse by lazy {
         getOption<Map<Int, Int>>("Inventory")
-//            .filter { Bar.forId(it.key) != null }.map { Pair(Bar.forId(it.key)!!, it.value) }
             .filter { GiantsFoundryItem.forId(it.key) != null }.map { Pair(GiantsFoundryItem.forId(it.key)!!, it.value) }
     }
 
