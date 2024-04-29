@@ -10,7 +10,7 @@ import org.powbot.api.script.ScriptManifest
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.debug
 import org.powbot.krulvis.api.ATContext.me
-import org.powbot.krulvis.api.extensions.items.Bar
+import org.powbot.krulvis.api.extensions.items.GiantsFoundryItem
 import org.powbot.krulvis.api.script.ATScript
 import org.powbot.krulvis.api.script.painter.ATPaint
 import org.powbot.krulvis.api.utils.Utils
@@ -30,7 +30,7 @@ import org.powbot.krulvis.giantsfoundry.tree.branch.IsSmithing
         ScriptConfiguration(
             "Inventory", "What bars do you want to smelt?",
             optionType = OptionType.INVENTORY,
-            defaultValue = "{\"2361\":14,\"2359\":14}"
+            defaultValue = "{\"1335\":7,\"1339\":7}"
         )
     ]
 )
@@ -44,21 +44,21 @@ class GiantsFoundry : ATScript() {
     var currentAction: Action? = null
     val barsToUse by lazy {
         getOption<Map<Int, Int>>("Inventory")
-            .filter { Bar.forId(it.key) != null }.map { Pair(Bar.forId(it.key)!!, it.value) }
+            .filter { GiantsFoundryItem.forId(it.key) != null }.map { Pair(GiantsFoundryItem.forId(it.key)!!, it.value) }
     }
 
     override val rootComponent: TreeComponent<*> = IsSmithing(this)
 //    override val rootComponent: TreeComponent<*> = SimpleLeaf(this, "SimpleLeaf") { sleep(2000) }
 
-    fun getInvBar() = Inventory.stream().id(*Bar.ELEMENTALS.map { it.id }.toIntArray()).firstOrNull()
+    fun getInvBar() = Inventory.stream().id(*GiantsFoundryItem.values().map { it.id }.toIntArray()).firstOrNull()
 
-    fun crucibleBars(): List<Pair<Bar, Int>> {
-        return Bar.ELEMENTALS.map { it to it.giantsFoundryCount }.filter { it.second > 0 }
+    fun crucibleBars(): List<Pair<GiantsFoundryItem, Int>> {
+        return GiantsFoundryItem.METAL_BARS.map { it to it.giantsFoundryCount }.filter { it.second > 0 }
     }
 
-    fun crucibleBarCount(bar: Bar): Int = crucibleBars().firstOrNull { it.first == bar }?.second ?: 0
+    fun crucibleBarCount(bar: GiantsFoundryItem): Int = crucibleBars().firstOrNull { it.first == bar }?.second ?: 0
 
-    fun correctCrucibleCount(bar: Bar) =
+    fun correctCrucibleCount(bar: GiantsFoundryItem) =
         crucibleBarCount(bar) == (barsToUse.firstOrNull { it.first == bar }?.second ?: 0)
 
     fun isSmithing() = Equipment.stream().name("Preform").isNotEmpty()

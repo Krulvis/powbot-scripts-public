@@ -4,7 +4,7 @@ import org.powbot.api.rt4.walking.model.Skill
 import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.paint.PaintFormatters
-import org.powbot.krulvis.api.extensions.items.Bar
+import org.powbot.krulvis.api.extensions.items.GiantsFoundryItem
 import org.powbot.krulvis.api.script.painter.ATPaint
 import org.powbot.mobile.drawing.Rendering
 import org.powbot.mobile.script.ScriptManager
@@ -28,7 +28,7 @@ class GiantsFoundryPainter(script: GiantsFoundry) : ATPaint<GiantsFoundry>(scrip
 //            .addString("Tips") { MouldType.Tips.selected().toString(2) }
 //            .addString("SelectedAll") { MouldType.selectedAll().toString() }
 //            .addString("OpenPage") { MouldType.openPage().toString() }
-        Bar.ELEMENTALS.forEachIndexed { index, bar ->
+        GiantsFoundryItem.METAL_BARS.forEachIndexed { index, bar ->
             paintBuilder.addString(bar.name) { "${bar.giantsFoundryCount}" }
         }
         return paintBuilder.build()

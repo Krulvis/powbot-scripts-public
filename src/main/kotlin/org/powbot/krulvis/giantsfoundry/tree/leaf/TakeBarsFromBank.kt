@@ -17,14 +17,20 @@ class TakeBarsFromBank(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Tak
         }
         if (openBank()) {
             script.barsToUse
-                .map { Pair(it.first, it.second - script.crucibleBarCount(it.first)) }
+                .map { Pair(it.first, (it.second) - script.crucibleBarCount(it.first)) } // TODO: Try to get this math inside of here so we can skip creating "amountt"
                 .forEach { (bar, amount) ->
-                    val curCount = bar.getInventoryCount()
-                    if (curCount <= amount) {
-                        if (bar.withdrawExact(amount)) {
-                            waitFor { bar.getInventoryCount() == amount }
-                        }
+
+                    // Regression here due to not taking into account crucibleBarCount
+                    if (bar.getInventoryCount() <= amount && bar.withdrawExact(Math.abs(bar.getInventoryCount() - amount))) {
+                        waitFor { bar.getInventoryCount() == amount }
                     }
+
+//                    script.log.info("bar: " + bar)
+//                    val amountt = script.crucibleBarCount(if (bar.parentBar != null) bar.parentBar else bar)
+//                    val desiredAmount = Math.ceil(((28 / bar.barCount) - amountt) / bar.barCount.toDouble()).toInt()
+//                    if (bar.getInventoryCount() <= desiredAmount && bar.withdrawExact(desiredAmount)) {
+//                        waitFor { bar.getInventoryCount() == desiredAmount }
+//                    }
                 }
         }
     }
