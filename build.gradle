@@ -1,0 +1,27 @@
+plugins {
+    id 'java'
+    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
+}
+
+
+group 'org.powbot.krulvis'
+
+
+repositories {
+    mavenCentral()
+    google()
+    maven { url = 'https://repo.powbot.org/releases' }
+}
+
+
+dependencies {
+    implementation('org.powbot:client-sdk-loader:[1.+,1.0.99-SNAPSHOT)')
+    implementation('org.powbot:client-sdk:[1.+,1.0.99-SNAPSHOT)')
+    implementation 'com.google.guava:guava:31.1-jre'
+    implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
+    implementation "com.fasterxml.jackson.core:jackson-core:2.13.3"
+    implementation "com.fasterxml.jackson.core:jackson-annotations:2.13.3"
+    implementation "com.fasterxml.jackson.core:jackson-databind:2.13.3"
+    implementation "com.fasterxml.jackson.module:jackson-module-kotlin:2.13.3"
+    implementation "org.slf4j:slf4j-api:2.0.9"
+}

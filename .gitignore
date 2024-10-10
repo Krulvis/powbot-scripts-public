@@ -86,5 +86,7 @@ build/
 
 api/*
 
+src/main/kotlin/org/powbot/krulvis/test/TemporossDebug.kt
 src/main/kotlin/org/powbot/krulvis/tempoross
+src/main/kotlin/org/powbot/krulvis/mixology
 src/main/kotlin/org/powbot/krulvis/runecrafting
