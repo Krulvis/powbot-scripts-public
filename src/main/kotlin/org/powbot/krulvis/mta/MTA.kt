@@ -23,21 +23,27 @@ import org.powbot.mobile.script.ScriptManager
             name = "Method",
             description = "Which room to gather points at?",
             allowedValues = arrayOf(ALCHEMY_METHOD, ENCHANTING_METHOD, GRAVEYARD_METHOD, TELEKINETIC_METHOD),
-            defaultValue = TELEKINETIC_METHOD
+            defaultValue = ENCHANTING_METHOD
         ),
         ScriptConfiguration(
             name = "Stop at points",
             description = "Stop at points cap?",
             optionType = OptionType.BOOLEAN,
-            defaultValue = "false"
+            defaultValue = "true"
         ),
         ScriptConfiguration(
             name = "Points to collect",
             description = "How many points to stop?",
             optionType = OptionType.INTEGER,
-            defaultValue = "500",
-            visible = false
+            defaultValue = "32000",
+            visible = true
         ),
+        ScriptConfiguration(
+            name = "Pick up Dragonstone",
+            description = "Should pick up Dragonstone?",
+            optionType = OptionType.BOOLEAN,
+            defaultValue = "false"
+        )
     ]
 )
 class MTA : KrulScript() {
@@ -45,6 +51,7 @@ class MTA : KrulScript() {
     val method by lazy { getOption<String>("Method") }
     val stopAtPoints by lazy { getOption<Boolean>("Stop at points") }
     val pointsCap by lazy { getOption<Int>("Points to collect") }
+    val pickupDragonstone by lazy { getOption<Boolean>("Pick up Dragonstone (Enchanting)") }
 
     lateinit var room: MTARoom
     var started = false
@@ -94,5 +101,5 @@ class MTA : KrulScript() {
 }
 
 fun main() {
-    MTA().startScript("127.0.0.1", "GIM", true)
+    MTA().startScript("127.0.0.1", "GIM", false)
 }
