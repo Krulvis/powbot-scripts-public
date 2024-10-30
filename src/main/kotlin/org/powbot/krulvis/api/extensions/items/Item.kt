@@ -4,6 +4,9 @@ import org.powbot.api.rt4.Bank
 import org.powbot.api.rt4.Equipment
 import org.powbot.api.rt4.Inventory
 import org.powbot.api.rt4.Item
+import org.powbot.api.rt4.stream.FilterParameters
+import org.powbot.api.rt4.stream.SimpleStream
+import org.powbot.api.rt4.stream.item.ItemStream
 import org.powbot.krulvis.api.ATContext.stripNumbersAndCharges
 import org.powbot.krulvis.api.extensions.Utils.waitFor
 import org.powbot.mobile.rscache.loader.ItemLoader
@@ -20,28 +23,41 @@ interface Item {
 
 	fun getNotedIds(): IntArray = ids.map { it + 1 }.toIntArray()
 
+
 	fun notedInBank(): Boolean = Bank.stream().id(*getNotedIds()).isNotEmpty()
 
+	fun <S : SimpleStream<Item, S, FilterParameters>> ItemStream<S>.filterItems(allowNoted: Boolean = false) =
+		filtered {
+			var ids = ids
+			if (allowNoted) {
+				ids += getNotedIds()
+			}
+			it.name().stripNumbersAndCharges() == itemName || it.id in ids
+		}
+
 	fun inInventory(): Boolean =
-		Inventory.stream().filtered { it.name().stripNumbersAndCharges() == itemName || it.id in ids }.isNotEmpty()
+		Inventory.stream().filterItems().isNotEmpty()
 
 	fun inEquipment(): Boolean =
-		Equipment.stream().filtered { it.name().stripNumbersAndCharges() == itemName || it.id in ids }.isNotEmpty()
+		Equipment.stream().filterItems().isNotEmpty()
 
 	fun hasWith(): Boolean
 
 	fun inBank(): Boolean =
-		Bank.stream().filtered { it.name().stripNumbersAndCharges() == itemName || it.id in ids }.sumOf { it.stack } > 0
+		Bank.stream().filterItems().sumOf { it.stack } > 0
 
 	fun getBankId(worse: Boolean = false): Int {
+		val bankItems = Bank.stream().filterItems().filtered { it.stack > 0 }.toList()
 		val ids = if (worse) ids.reversed().toIntArray() else ids
-		val bankIds = Bank.stream().filtered { it.id() in ids }.map { it.id }
-		val bankItem = ids.firstOrNull { it in bankIds }
-		return bankItem ?: Bank.stream().filtered { it.name().stripNumbersAndCharges() == itemName }.first().id()
+		return if (worse) {
+			bankItems.minByOrNull { ids.indexOf(it.id) }?.id ?: -1
+		} else {
+			bankItems.firstOrNull()?.id ?: -1
+		}
 	}
 
 	fun getInvItem(worse: Boolean = true): Item? {
-		val items = Inventory.get()
+		val items = Inventory.stream().filterItems().toList()
 		if (worse) {
 			ids.reversed().forEach { id ->
 				if (items.any { it.id == id }) {
@@ -53,24 +69,15 @@ interface Item {
 	}
 
 	fun getInventoryCount(countNoted: Boolean = true): Int {
-		return if (countNoted) Inventory.stream()
-			.filtered {
-				ids.contains(it.id()) || getNotedIds().contains(it.id()) || it.name()
-					.stripNumbersAndCharges() == itemName
-			}
-			.sumOf { if (it.stack <= 0) 1 else it.stack }
-		else Inventory.stream().filtered { ids.contains(it.id()) || it.name().stripNumbersAndCharges() == itemName }
-			.count(true).toInt()
+		return Inventory.stream().filterItems(countNoted).sumOf { if (it.stack <= 0) 1 else it.stack }
 	}
 
 	fun getEquipmentCount(): Int {
-		return Equipment.stream()
-			.firstOrNull { ids.contains(it.id()) || it.name().stripNumbersAndCharges() == itemName }?.stackSize() ?: 0
+		return Equipment.stream().filterItems().firstOrNull()?.stackSize() ?: 0
 	}
 
 	fun getInventoryId() =
-		Inventory.stream().filtered { ids.contains(it.id()) || it.name().stripNumbersAndCharges() == itemName }
-			.first().id
+		Inventory.stream().filterItems().first().id
 
 	fun getCount(countNoted: Boolean = true): Int
 
@@ -194,6 +201,7 @@ interface Item {
 		const val DRAGON_WARHAMMER = 13576
 		const val HERB_SACK_OPEN = 24478
 		const val RUNE_POUCH = 12791
+		const val DIVINE_RUNE_POUCH = 27281
 		const val TRIDENT_FULL = 11905
 		const val TRIDENT_UNCHARGED = 11908
 		const val KRAKEN_TENTACLE = 12004
@@ -220,7 +228,8 @@ interface Item {
 
 		val HARPOON = 311
 		val BARB_TAIL_HARPOON = 10129
-		val SPEC_HARPOONS = intArrayOf(21028, 21031, 21033, 23762, 23764, 25059, 25373)
+		val CRYSTAL_HARPOON = 23762
+		val SPEC_HARPOONS = intArrayOf(21028, 21031, 21033, CRYSTAL_HARPOON, 23764, 25059, 25373)
 		val WEARABLE_HARPOONS = intArrayOf(BARB_TAIL_HARPOON, *SPEC_HARPOONS)
 		val HARPOONS = intArrayOf(HARPOON, *WEARABLE_HARPOONS)
 
@@ -254,3 +263,4 @@ interface Item {
 	}
 
 }
+

@@ -16,7 +16,7 @@ abstract class ATPaint<S : KrulScript>(val script: S, val x: Int = 110, val y: I
 	}
 
 	fun PaintBuilder.trackInventoryItemQ(itemId: Int) =
-		trackInventoryItem(itemId = itemId, textSize = null, TrackInventoryOption.QuantityChange)
+		trackInventoryItem(itemId = itemId, textSize = null, TrackInventoryOption.QuantityChangeIncOny)
 
 	abstract fun buildPaint(paintBuilder: PaintBuilder): Paint
 

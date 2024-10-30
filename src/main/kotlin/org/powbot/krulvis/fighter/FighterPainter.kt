@@ -1,7 +1,6 @@
 package org.powbot.krulvis.fighter
 
 import org.powbot.api.Color
-import org.powbot.api.Tile
 import org.powbot.api.rt4.walking.model.Skill
 import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
@@ -40,27 +39,28 @@ class FighterPainter(script: Fighter) : ATPaint<Fighter>(script) {
 	override fun paintCustom(g: Rendering) {
 		val target = script.currentTarget
 		if (target.valid()) {
-			g.drawString("Vis  : ${target.healthBarVisible()}", 500, 200)
-			g.drawString("HP   : ${target.healthPercent()}", 500, 220)
-			g.drawString("Anim : ${target.animation()}", 500, 240)
-			g.drawString("Valid: ${target.valid()}", 500, 260)
-			g.drawString(
-				"Watcher count total=${script.deathWatchers.size}, target=${script.deathWatchers.count { it.npc == target }}",
-				500,
-				300
-			)
+//			g.drawString("Vis  : ${target.healthBarVisible()}", 500, 200)
+//			g.drawString("HP   : ${target.healthPercent()}", 500, 220)
+//			g.drawString("Anim : ${target.animation()}", 500, 240)
+//			g.drawString("Valid: ${target.valid()}", 500, 260)
+//			g.drawString(
+//				"Watcher count total=${script.deathWatchers.size}, target=${script.deathWatchers.count { it.npc == target }}",
+//				500,
+//				300
+//			)
+//			g.drawString("SpecWatcher: ${script.specWatcher?.active}, reducedStats=${script.reducedStats}", 500, 320)
 		}
 		val lootWatcher = script.lootWachter ?: return
 		if (lootWatcher.active)
 			lootWatcher.tile.drawOnScreen(outlineColor = Color.CYAN)
-		val projectiles = script.projectiles
-		if (projectiles.isNotEmpty()) {
-			projectiles.forEach { projectile ->
-				projectile.destination().drawOnScreen(outlineColor = Color.RED, text = "${projectile.valid()}")
-			}
-			if (script.projectileSafespot != Tile.Nil) {
-				script.projectileSafespot.drawOnScreen(outlineColor = Color.GREEN)
-			}
-		}
+//		val projectiles = script.projectiles
+//		if (projectiles.isNotEmpty()) {
+//			projectiles.forEach { projectile ->
+//				projectile.destination().drawOnScreen(outlineColor = Color.RED, text = "${projectile.valid()}")
+//			}
+//			if (script.projectileSafespot != Tile.Nil) {
+//				script.projectileSafespot.drawOnScreen(outlineColor = Color.GREEN)
+//			}
+//		}
 	}
 }

@@ -9,10 +9,12 @@ import org.slf4j.LoggerFactory
 private const val MOUNTED_DIGSITE_WIDGET = 187
 private const val MOUNTED_DIGSITE_COMPONENT = 3
 
+const val LITHKREN_POH = "Lithkren"
+
 enum class MountedDigsiteTeleport(override val action: String, override val destination: Tile) : OpenableHouseTeleport {
 	Digsite("Digsite", Tile(3339, 3445, 0)),
 	FossilIsland("Fossil Island", Tile(3763, 3867, 1)),
-	Lithren("Lithren", Tile(3548, 10455, 0));
+	Litkhren("Lithkren", Tile(3548, 10455, 0));
 
 	override val logger: Logger = LoggerFactory.getLogger(javaClass.simpleName)
 	override val requirements: List<Requirement> = emptyList()

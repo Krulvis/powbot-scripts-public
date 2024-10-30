@@ -12,20 +12,22 @@ import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.dead
 import org.powbot.krulvis.api.ATContext.me
 import org.powbot.krulvis.api.extensions.items.Food
-import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
+import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
 import org.powbot.krulvis.api.extensions.teleports.Teleport
 import org.powbot.krulvis.api.extensions.teleports.TeleportMethod
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.CASTLE_WARS_JEWELLERY_BOX
-import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
-import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
+import org.powbot.krulvis.api.script.KrulScript
+import org.powbot.krulvis.api.script.painter.ATPaint
 import org.powbot.krulvis.dagannothkings.Data.EQUIPMENT_PREFIX_OPTION
+import org.powbot.krulvis.dagannothkings.Data.HEAL_GEAR_OPTION
+import org.powbot.krulvis.dagannothkings.Data.HEAL_ON_SPINOLYP_OPTION
 import org.powbot.krulvis.dagannothkings.Data.INVENTORY_OPTION
 import org.powbot.krulvis.dagannothkings.Data.KILL_PREFIX_OPTION
-import org.powbot.krulvis.dagannothkings.Data.KING_DEATH_ANIM
 import org.powbot.krulvis.dagannothkings.Data.King.Companion.king
 import org.powbot.krulvis.dagannothkings.Data.OFFENSIVE_PRAY_PREFIX_OPTION
 import org.powbot.krulvis.dagannothkings.Data.SAFESPOT_REX
+import org.powbot.krulvis.dagannothkings.Data.getKingsLadderUp
 import org.powbot.krulvis.dagannothkings.tree.branch.ShouldBank
 import org.powbot.krulvis.fighter.BANK_TELEPORT_OPTION
 import org.powbot.mobile.script.ScriptManager
@@ -54,7 +56,7 @@ fun main() {
 		ScriptConfiguration(KILL_PREFIX_OPTION + "Prime", "Kill Prime", OptionType.BOOLEAN, defaultValue = "false"),
 		ScriptConfiguration(
 			EQUIPMENT_PREFIX_OPTION + "Prime",
-			"Equipment for Supreme",
+			"Equipment for Prime",
 			OptionType.EQUIPMENT,
 			visible = false
 		),
@@ -81,7 +83,21 @@ fun main() {
 			allowedValues = ["NONE", "ULTIMATE_STRENGTH", "CHIVALRY", "PIETY"],
 			defaultValue = "NONE"
 		),
-		ScriptConfiguration(INVENTORY_OPTION, "Inventory setup", OptionType.INVENTORY),
+		ScriptConfiguration(
+			HEAL_ON_SPINOLYP_OPTION,
+			"Heal on Spinolyps in downtime?",
+			OptionType.BOOLEAN,
+			defaultValue = "false"
+		),
+		ScriptConfiguration(
+			HEAL_GEAR_OPTION,
+			"Equipment when killing Spinolyps",
+			OptionType.EQUIPMENT,
+			visible = false
+		),
+		ScriptConfiguration(
+			INVENTORY_OPTION, "Inventory setup", OptionType.INVENTORY
+		),
 		ScriptConfiguration(
 			BANK_TELEPORT_OPTION, "Which teleport to go to bank?", OptionType.STRING,
 			defaultValue = CASTLE_WARS_JEWELLERY_BOX, allowedValues = [CASTLE_WARS_JEWELLERY_BOX]
@@ -112,6 +128,11 @@ class DagannothKings : KrulScript() {
 		updateVisibility(EQUIPMENT_PREFIX_OPTION + "Prime", prime)
 	}
 
+	@ValueChanged(HEAL_ON_SPINOLYP_OPTION)
+	fun onSpinnops(spinnops: Boolean) {
+		updateVisibility(HEAL_GEAR_OPTION, spinnops)
+	}
+
 	override fun onStart() {
 		super.onStart()
 		Data.King.values().forEach {
@@ -123,8 +144,11 @@ class DagannothKings : KrulScript() {
 		}
 	}
 
+
+	val healOnSpinolyp by lazy { getOption<Boolean>(HEAL_ON_SPINOLYP_OPTION) }
+	val spinolypEquipment by lazy { EquipmentRequirement.forOption(getOption(HEAL_GEAR_OPTION)) }
 	val bankTeleport by lazy { TeleportMethod(Teleport.forName(getOption(BANK_TELEPORT_OPTION))) }
-	val allEquipment by lazy { Data.King.values().flatMap { it.equipment }.distinct() }
+	val allEquipment by lazy { (Data.King.values().flatMap { it.equipment } + spinolypEquipment).distinct() }
 	val allEquipmentIds by lazy { allEquipment.flatMap { e -> e.item.ids.toList() }.distinct() }
 	val inventory by lazy {
 		InventoryRequirement.forOption(getOption(INVENTORY_OPTION)).filterNot { it.item.id in allEquipmentIds }
@@ -134,16 +158,19 @@ class DagannothKings : KrulScript() {
 	val animMap: MutableMap<Data.King, Int> = mutableMapOf()
 	var forcedProtectionPrayer: Prayer.Effect? = null
 	var forcedBanking = false
+	var prayerBlock = false //Set to true while setting prayer from tickEvent
 
 	//Rex settings
-	var lureTile: Tile = Tile.Nil
-	var safeTile: Tile = Tile.Nil
-	var rexTile: Tile = Tile.Nil
+	var lureTile: Tile = Tile.Nil //Tile to stand on to lure rex before safespotting
+	var rexSafeTile: Tile = Tile.Nil //Tile on which to stand when safespotting rex
+	var rexTile: Tile = Tile.Nil //Tile that rex should be standing on before safespotting him
 	var rexSpawnTile: Tile = Tile.Nil
+	var evadeRexTile = Tile.Nil
+	var centerTileEvadeSupreme = Tile.Nil
 
 	val safeSpotRex: Boolean by lazy { getOption(SAFESPOT_REX) }
-	var activeKings: List<Npc> = emptyList()
-	var aliveKings: List<Npc> = emptyList()
+	var aliveKings: List<Data.King> = emptyList()
+	var offensiveKings = emptyList<Data.King>()
 	var ladderTile = Tile.Nil
 
 	@Subscribe
@@ -163,54 +190,84 @@ class DagannothKings : KrulScript() {
 			ladderTile = ladder.tile
 		} else if (lureTile == Tile.Nil) {
 			logger.info("Setting all tiles")
+			evadeRexTile = ladderTile.derive(4, 9)
 			lureTile = ladderTile.derive(29, 1)
-			safeTile = ladderTile.derive(28, -8)
-			rexTile = ladderTile.derive(28, -4) //Tile that rex should be standing on when safeSpotting him
+			rexSafeTile = ladderTile.derive(28, -8)
+			rexTile = ladderTile.derive(28, -4)
 			rexSpawnTile = ladderTile.derive(15, -3)
+			centerTileEvadeSupreme = ladderTile.derive(22, 0)
 
 			Data.King.Rex.killTile = rexTile
-			Data.King.Prime.killTile = ladderTile.derive(22, 11) // Do not go further than this tile or Supreme might attack
+			Data.King.Prime.killTile =
+				ladderTile.derive(22, 11) // Do not go further than this tile or Supreme might attack
 		} else if (lureTile.distance() < 50) {
+			if (getKingsLadderUp().valid()) {
+				lureTile = Tile.Nil
+				ladderTile = Tile.Nil
+				logger.info("Moved up? Escaped?")
+				return
+			}
 			val mt = me.tile()
 			logger.info("mytile dx=${mt.x - ladderTile.x}, dy=${mt.y - ladderTile.y}")
 			//Inside Kings lair and set basic stuff
 			val newKings = Npcs.stream().nameContains("Dagannoth").toList()
-			newKings.forEach { k ->
-				if (!activeKings.contains(k)) {
-					val kingTile = k.tile()
-					logger.info("${k.name} spawned at tile=${k.tile()}, dx=${kingTile.x - ladderTile.x}, dy=${kingTile.y - ladderTile.y}")
-				}
+			newKings.associateWith { it.king() }.forEach {
+				it.value?.npc = it.key
 			}
-			activeKings = newKings
-			aliveKings = newKings.filter { !it.dead() }
+			aliveKings = Data.King.values().filter { !it.npc.dead() }
+			offensiveKings =
+				aliveKings.filter { it.npc.interacting() == me }
+					.filter { it != Data.King.Rex || !safeSpotRex || me.tile() != rexSafeTile }
+			setForcedProtection(offensiveKings)
 		}
 		watchForLoot()
 	}
 
-	fun setForcedProtection(kings: List<Npc>) {
-		val offensiveKings = kings
-			.filter { it.interacting() == me }
-			.mapNotNull { it.king() }
-			.filter { it != Data.King.Rex || !safeSpotRex }
-		val targetKing = target.king()
-		if (offensiveKings.isNotEmpty()) {
-			val cycle = Game.cycle()
-			forcedProtectionPrayer =
-				offensiveKings.maxByOrNull { cycle - animMap.getOrDefault(it, -1) }?.protectionPrayer ?: return
-			if (!Prayer.prayerActive(forcedProtectionPrayer!!)) {
-				Prayer.prayer(forcedProtectionPrayer!!, true)
-			}
-		} else if (targetKing != null && targetKing != Data.King.Rex) {
-			forcedProtectionPrayer = targetKing.protectionPrayer
-			if (!Prayer.prayerActive(forcedProtectionPrayer!!)) {
-				Prayer.prayer(forcedProtectionPrayer!!, true)
-			}
+	private fun setForcedProtectionOnNext(activeKings: List<Data.King>) {
+		val sortedAttacking =
+			activeKings.associateWith { animMap.getOrDefault(it, Int.MAX_VALUE) }.toList().sortedBy { it.second }
+		if (sortedAttacking.isEmpty()) return
+		val first = sortedAttacking.first()
+		val prime = animMap.getOrDefault(Data.King.Prime, Int.MAX_VALUE)
+		forcedProtectionPrayer = if (first.second == prime) {
+			//Always prioritize prime if two attack at the same time
+			Data.King.Prime.protectionPrayer
 		} else {
+			first.first.protectionPrayer
+		}
+
+		logger.info("Setting prayer=${forcedProtectionPrayer} because offensiveKings.isNotEmpty()")
+		setPrayer(forcedProtectionPrayer!!)
+	}
+
+	private fun setPrayer(effect: Prayer.Effect) {
+		prayerBlock = true
+		if (!Prayer.prayerActive(effect)) {
+			Prayer.prayer(effect, true)
+		}
+		prayerBlock = false
+	}
+
+	private fun setForcedProtection(kings: List<Data.King>) {
+		val targetKing = target.king()
+		val firstRespawn =
+			Data.King.values().minByOrNull { it.respawnTimer.getRemainder() }
+		if (offensiveKings.isNotEmpty()) {
+			setForcedProtectionOnNext(kings)
+		} else if (targetKing != null && targetKing != Data.King.Rex) {
+			logger.info("Setting prayer according to king we're fighting")
+			forcedProtectionPrayer = targetKing.protectionPrayer
+			setPrayer(forcedProtectionPrayer!!)
+		} else if ((firstRespawn?.respawnTimer?.getRemainder() ?: Long.MAX_VALUE) in -5000..2000) {
+			forcedProtectionPrayer = firstRespawn!!.protectionPrayer
+			setPrayer(forcedProtectionPrayer!!)
+		} else {
+			logger.info("Don't need prayer")
 			forcedProtectionPrayer = null
-			Data.King.values().map { it.protectionPrayer }.forEach {
-				if (Prayer.prayerActive(it)) {
-					Prayer.prayer(it, false)
-				}
+			Data.King.values().forEach {
+				Prayer.prayer(it.protectionPrayer, false)
+				val offensive = it.offensivePrayer
+				if (offensive != null) Prayer.prayer(offensive, false)
 			}
 		}
 	}
@@ -239,16 +296,18 @@ class DagannothKings : KrulScript() {
 		val isOffensive = anim == king.offensiveAnim
 		logger.info("NpcAnimationEvent(npc=${npc.name}, animation=${anim}, offensive=${isOffensive})")
 		if (isOffensive) {
-			val lastCycle = animMap.getOrDefault(king, Game.cycle())
-			animMap[king] = Game.cycle()
-			logger.info("Attack from king=$king, took=${Game.cycle() - lastCycle}")
+			val lastAnimTick = animMap.getOrDefault(king, ticks)
+			animMap[king] = ticks
+			logger.info("Attack from king=$king, took=${ticks - lastAnimTick}")
+			setForcedProtectionOnNext(offensiveKings)
 		}
-		if (anim == KING_DEATH_ANIM && npc == target && npc.dead()) {
-			kills++
+		if (king.kill && npc.dead()) {
+			if (king.respawnTimer.isFinished()) {
+				kills++
+			}
 			king.respawnTimer.reset()
 		}
 	}
-
 
 	@Subscribe
 	fun onInventoryChange(i: InventoryChangeEvent) {
@@ -269,8 +328,7 @@ class DagannothKings : KrulScript() {
 	}
 
 	fun getNewTarget(): Npc? {
-		val aliveKings = activeKings.filter { !it.dead() }.associateBy { it.king() }
-		return aliveKings.getOrDefault(Data.King.values().firstOrNull { king -> aliveKings.any { it.key == king } }, null)
+		return aliveKings.sortedBy { it.ordinal }.firstOrNull { it.kill }?.npc
 	}
 
 

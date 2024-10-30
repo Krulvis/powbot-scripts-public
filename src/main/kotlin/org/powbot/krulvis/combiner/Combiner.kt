@@ -63,7 +63,7 @@ class Combiner : KrulScript() {
 	val spamClick by lazy { getOption<Boolean>("Spam Click") }
 	private val spamDelay by lazy { getOption<Int>("Spam Click Delay") }
 	fun calculateSpamDelay(): Int {
-		val margin = spamDelay / 10.0
+		val margin = spamDelay / 5.0
 		return Random.nextDouble(spamDelay - margin, spamDelay + margin).toInt()
 	}
 
@@ -78,6 +78,11 @@ class Combiner : KrulScript() {
 	override val rootComponent: TreeComponent<*> = ShouldBank(this)
 
 	fun stoppedUsing() = Production.stoppedUsing(itemToCheck)
+	fun stopProductionTimer() {
+		val tracker = Production.trackers.firstOrNull { it.id == itemToCheck } ?: return
+		tracker.lastChangeTime = System.currentTimeMillis() - 10000
+		tracker.lastAmount = 0
+	}
 
 	fun shouldBank() = items.any {
 		!Inventory.containsOneOf(it.key)

@@ -8,6 +8,7 @@ import org.powbot.api.rt4.magic.RunePower
 import org.powbot.api.rt4.walking.local.Flag
 import org.powbot.api.rt4.walking.local.LocalPathFinder
 import org.powbot.api.rt4.walking.model.Skill
+import org.powbot.api.waiter.ActionWaiter
 import org.powbot.krulvis.api.antiban.DelayHandler
 import org.powbot.krulvis.api.antiban.OddsModifier
 import org.powbot.krulvis.api.extensions.Utils.mid
@@ -78,7 +79,7 @@ object ATContext {
 		)
 		if (Movement.step(tileToClick, minDistance = 0)) {
 			debug("Successfully stepped to tileToClick=${tileToClick}")
-			waitForWhile(mid(), { lastOrNull { it.onMap() } != walkableTile }) { whileWaiting() }
+			return waitForWhile(mid(), { lastOrNull { it.onMap() } != walkableTile }) { whileWaiting() }
 		} else {
 			debug("Failed Movement.step(${tileToClick}, minDistance=0)")
 		}
@@ -87,7 +88,7 @@ object ATContext {
 		val last = last()
 		val distanceToLast = last.distanceTo(destination)
 		debug("Standing on ${destination}, lastTile=${last}, distance=${distanceToLast}, closeEnough=${distanceToLast <= distanceToLastTile}")
-		return distanceToLast <= distanceToLastTile
+		return false
 	}
 
 	fun Movement.moving(): Boolean = destination() != Tile.Nil
@@ -143,67 +144,93 @@ object ATContext {
 	fun walkAndInteractWhile(
 		target: InteractableEntity?,
 		action: String,
-		alwaysWalk: Boolean = false,
 		allowWalk: Boolean = true,
 		selectItem: Int = -1,
-		useMenu: Boolean = true,
 		whileWaiting: () -> Any = {}
 	): Boolean {
 		val t = target ?: return false
 		val name = (t as Nameable).name()
-		val pos = t.tile().getWalkableNeighbor()
+		val pos = t.tile().getWalkableNeighbor() ?: t.tile()
 		val destination = Movement.destination()
+		val distanceToPos = if (destination != Tile.Nil) pos.distanceTo(destination) else pos.distance()
 
-		turnRunOn()
-		logger.info("Interacting with: $name at: $pos")
-		if (Menu.opened() && Menu.contains {
-				it.action.equals(action, true) && (name == null || it.option.contains(
-					name,
-					true
-				))
-			}) {
-			debug("Clicking directly on opened menu")
-			return handleMenu(action, name)
+		if (t is Modelable<*>) {
+			InteractiveState.setRenderOnly(t.renderables())
 		}
 
-		if (pos != null && allowWalk && destination != pos) {
-			val triggerDistance = if (alwaysWalk) 4 else 12
-			val targetTile = if (destination == Tile.Nil) Players.local() else destination
-			val distanceToTarget = pos.distanceTo(me)
-			if (distanceToTarget > triggerDistance || !t.inViewport(true)) {
-				debug(
-					"Walking before interacting distance too big=${distanceToTarget > triggerDistance}, InViewport=${
-						t.inViewport(true)
-					}"
-				)
-				debug("destination=${destination}, targetTile=${targetTile}, pos=${pos}, distanceToTarget=${distanceToTarget}")
-				Movement.step(pos)
-				if (!waitForWhile(1000, { Movement.destination().distanceTo(pos) <= 5 })) {
-					return false
-				}
-				waitForWhile(mid(), { !t.valid() || t.inViewport(true) }, whileWaiting)
+		turnRunOn()
+		var point = t.nextPoint()
+		val inViewport = point.inViewport()
+		debug("Interacting with: $name pos=$pos, point=$point, inViewport=$inViewport")
+		if (!inViewport || distanceToPos > 12) {
+			debug("Not in viewport, walking before interacting distance=${distanceToPos}, allowWalk=$allowWalk")
+			if (!allowWalk) {
+				return false
 			}
+			Movement.step(pos)
+			if (!waitForWhile(1000, { Movement.destination().distanceTo(pos) <= 5 })) {
+				return false
+			}
+			waitForWhile(mid(), {
+				point = t.nextPoint()
+				!t.valid() || point.inViewport()
+			}, whileWaiting)
 		}
 
 		val selectedId = Inventory.selectedItem().id()
 		if (selectedId != selectItem) {
 			Game.tab(Game.Tab.INVENTORY)
 			if (selectItem > -1) {
-				Inventory.stream().id(selectItem).firstOrNull()?.interact("Use", useMenu)
+				Inventory.stream().id(selectItem).firstOrNull()?.interact("Use")
 			} else {
 				Inventory.stream().id(selectedId).firstOrNull()?.click()
 			}
 
 		}
-		val interactBool =
-			if (name == null || name == "null" || name.isEmpty()) t.interact(action, useMenu) else t.interact(
-				action,
-				name,
-				useMenu
-			)
 		return waitForWhile(short(), {
 			Inventory.selectedItemIndex() == -1 || Inventory.selectedItem().id() == selectItem
-		}, whileWaiting) && interactBool
+		}, whileWaiting) && point.interact(action, name)
+	}
+
+	private fun Point.inViewport(checkIfObstructed: Boolean = true) =
+		this != Point.Nil && Game.inViewport(this, checkIfObstructed)
+
+	private fun Point.interact(action: String, name: String? = null): Boolean {
+		val singleTap = Game.singleTapEnabled()
+		Game.setSingleTapToggle(true)
+		val waiter = ActionWaiter(action, name)
+		waiter.reset()
+
+		try {
+			if (Menu.opened() && handleMenu(action, name)) {
+				Game.setSingleTapToggle(singleTap)
+				if (waitFor(100) { waiter.finished() }) {
+					waiter.unregister()
+					return true
+				}
+			}
+			debug("interacting on point=$this, action=$action, name=$name")
+			if (Game.openTabBounds().contains(this) && !Game.closeOpenTab()) {
+				debug("couldn't close obstructing tab, returning false")
+			} else if (Input.tap(this) && waitFor(250) { Menu.opened() }) {
+				if (handleMenu(action, name)) {
+					Game.setSingleTapToggle(singleTap)
+					if (waitFor(200) { waiter.finished() }) {
+						debug("Successful interaction waiter is finished=${waiter.finished()}")
+						waiter.unregister()
+						return true
+					}
+				} else {
+					debug("Failed to do menu interaction")
+				}
+			}
+		} catch (e: Exception) {
+			logger.info("Exception in point.interact")
+			logger.error(e.stackTraceToString())
+		}
+		Game.setSingleTapToggle(singleTap)
+		waiter.unregister()
+		return false
 	}
 
 	/**
@@ -212,33 +239,25 @@ object ATContext {
 	fun walkAndInteract(
 		target: InteractableEntity?,
 		action: String,
-		alwaysWalk: Boolean = false,
 		allowWalk: Boolean = true,
 		selectItem: Int = -1,
-		useMenu: Boolean = true
 	): Boolean {
-		return walkAndInteractWhile(target, action, alwaysWalk, allowWalk, selectItem, useMenu)
+		return walkAndInteractWhile(target, action, allowWalk, selectItem)
 	}
 
 	/**
 	 * Requires menu to be open
 	 */
-	fun handleMenu(action: String, name: String?): Boolean {
-		if (!Menu.opened()) {
-			return false
-		}
-		if (!Menu.contains {
-				it.action.equals(action, true) && (name == null || it.option.contains(
-					name,
-					true
-				))
-			}) {
+	private fun handleMenu(action: String, name: String?): Boolean {
+		val index = Menu.indexOf(Menu.TextFilter(action, name))
+		if (index < 0) {
 			debug("Closing menu in: handleMenu()")
 			Menu.click { it.action == "Cancel" }
-			waitFor { !Menu.opened() }
+			Condition.wait({ !Menu.opened() }, 20, 100)
 			return false
 		}
-		return Menu.click { it.action.contains(action, true) && (name == null || it.option.contains(name, true)) }
+		val slotPoint = Menu.nextSlotPoint(index)
+		return Input.tap(slotPoint)
 	}
 
 	fun Locatable.distance(): Int =
@@ -256,6 +275,8 @@ object ATContext {
 		val mos = Game.mapOffset()
 		return Tile(x() - mos.x(), y() - mos.y(), floor())
 	}
+
+	fun Bank.depositInventoryButton() = Components.stream(12).action("Deposit inventory").first()
 
 	fun Equipment.containsOneOf(vararg ids: Int): Boolean = stream().anyMatch { it.id() in ids }
 	fun Bank.containsOneOf(vararg ids: Int): Boolean = (stream().firstOrNull { it.id() in ids }?.stack ?: 0) > 0
@@ -406,9 +427,12 @@ object ATContext {
 
 	val BARROWS_REGEX = Regex("""(?<!\()\b\d+(?!\))""")
 	val CHARGES_REGEX = Regex("""\(?\b\d+\)?""")
+	val CHARGES_REGEX_ONLY_NUMBERS = Regex("""\(\b(\d+)\)""")
 
 	fun String.stripBarrowsCharge() = replace(BARROWS_REGEX, "").trimEnd()
 	fun String.stripNumbersAndCharges() = replace(CHARGES_REGEX, "").trimEnd()
+
+	fun Item.charges() = CHARGES_REGEX_ONLY_NUMBERS.find(name())?.value?.toIntOrNull() ?: 0
 
 	val TAG_REGEX = Regex("""<[^>]*>""")
 

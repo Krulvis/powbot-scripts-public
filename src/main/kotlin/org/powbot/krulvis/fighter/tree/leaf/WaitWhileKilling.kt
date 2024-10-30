@@ -10,16 +10,19 @@ class WaitWhileKilling(script: Fighter) : Leaf<Fighter>(script, "Wait for kill c
 		Chat.clickContinue()
 		if (script.canActivateQuickPrayer()) {
 			Prayer.quickPrayer(true)
-		} else
-
-			if (script.hasSlayerBracelet) {
-				Game.tab(Game.Tab.INVENTORY)
-				if (script.currentTarget.healthPercent() < 10 && !script.wearingSlayerBracelet()) {
-					if (script.getSlayerBracelet().interact("Wear")) {
-						waitFor { script.wearingSlayerBracelet() }
-					}
+		} else if (script.hasSlayerBracelet) {
+			Game.tab(Game.Tab.INVENTORY)
+			if (script.currentTarget.healthPercent() < 10 && !script.wearingSlayerBracelet()) {
+				if (script.getSlayerBracelet().interact("Wear")) {
+					script.shouldWearSlayerBracelet = true
+					waitFor { script.wearingSlayerBracelet() }
 				}
 			}
+		}
+
+		if (script.shouldSpec() && !Combat.specialAttack()) {
+			Combat.specialAttack(true)
+		}
 
 		val target = Players.local().interacting()
 		val safespot = script.centerTile

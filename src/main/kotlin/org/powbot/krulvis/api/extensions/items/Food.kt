@@ -39,6 +39,7 @@ enum class Food(val healing: Int, override vararg val ids: Int) : Item, Serializ
 	POTATO_CHEESE(16, 6705),
 	MONKFISH(16, 7946),
 	SHARK(20, 385),
+	SEA_TURTLE(21, 397),
 	MANTA_RAY(22, 391),
 	KARAMBWAN(16, 3144),
 	SUMMER_PIE(11, 7218, 7220),

@@ -11,7 +11,7 @@ class Leave(script: TitheFarmer) : Leaf<TitheFarmer>(script, "Leaving") {
 
     override fun execute() {
         Objects.stream(25).name("Farm door").nearest().findFirst().ifPresent {
-            if (walkAndInteract(it, "Open", useMenu = false)) {
+            if (walkAndInteract(it, "Open")) {
                 waitFor(long()) { script.getPoints() == -1 }
             }
         }

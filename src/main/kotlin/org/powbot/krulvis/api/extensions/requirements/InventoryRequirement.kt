@@ -16,8 +16,8 @@ open class InventoryRequirement(
 	var allowLess = false
 
 	constructor(id: Int, amount: Int, allowMore: Boolean = false, countNoted: Boolean = true) : this(
-		Potion.forId(id) ?: BloodEssence.forId(id) ?: ITeleportItem.getTeleportItem(id) ?: InventoryItem(id),
-		amount, false, allowMore, countNoted
+		Potion.forId(id) ?: BloodEssence.forId(id) ?: EssencePouch.forId(id) ?: ITeleportItem.getTeleportItem(id)
+		?: InventoryItem(id), amount, false, allowMore, countNoted
 	)
 
 	fun getCount(): Int {
@@ -35,6 +35,7 @@ open class InventoryRequirement(
 
 
 	companion object {
+		fun List<InventoryRequirement>.ids() = flatMap { it.item.ids.toList() }.toIntArray()
 		fun forOption(option: Map<Int, Int>) =
 			option.map { InventoryRequirement(it.key, it.value, allowMore = it.value > 28) }
 	}

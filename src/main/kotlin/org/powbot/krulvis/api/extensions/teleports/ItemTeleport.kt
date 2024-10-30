@@ -24,6 +24,7 @@ const val ROYAL_SEED_POD = "Royal Seed Pod"
 const val LAVA_MAZE_BURNING = "Lava Maze BA"
 const val BANDIT_CAMP_BURNING = "Bandit Camp BA"
 const val DURADEL_KARAMJA_GLOVES = "Duradel Karamja Gloves"
+const val GEM_MINE_KARAMJA_GLOVES = "Gem Mine Karamja Gloves"
 const val KALEB_ACHIEVEMENT_DIARY = "Kaleb Achievement Diary"
 const val GUILD_CRAFTING_CAPE = "Guild Crafting Cape"
 const val GUILD_MYTH_CAPE = "Guild Myth Cape"
@@ -47,6 +48,7 @@ enum class ItemTeleport(
 	LAVA_MAZE_BA(TeleportEquipment.BURNING, "Lava Maze", Tile(3036, 3652, 0)),
 	BANDIT_CAMP_BA(TeleportEquipment.BURNING, "Bandit Camp", Tile(3028, 3843, 0)),
 	DURADEL_KARAMJA_GLOVES(TeleportEquipment.KARAMJA_GLOVES, "Slayer Master", Tile(2868, 2981, 1)),
+	GEM_MINE_KARAMJA_GLOVES(TeleportEquipment.KARAMJA_GLOVES, "Gem Mine", Tile(2841, 9387, 0)),
 	KALEB_ACHIEVEMENT_DIARY(TeleportEquipment.ACHIEVEMENT_DIARY_CAPE, "Kaleb Paramaya", Tile(2861, 2997, 1)),
 	GUILD_CRAFTING_CAPE(TeleportEquipment.CRAFTING_CAPE, "Teleport", Tile(2933, 3283, 0)),
 	GUILD_MYTH_CAPE(TeleportEquipment.MYTH_CAPE, "Teleport", Tile(2456, 2850, 0))

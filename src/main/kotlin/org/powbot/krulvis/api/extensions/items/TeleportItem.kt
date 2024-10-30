@@ -2,6 +2,9 @@ package org.powbot.krulvis.api.extensions.items
 
 import org.powbot.api.Random
 import org.powbot.api.rt4.*
+import org.powbot.api.rt4.stream.FilterParameters
+import org.powbot.api.rt4.stream.SimpleStream
+import org.powbot.api.rt4.stream.item.ItemStream
 import org.powbot.krulvis.api.ATContext.getCount
 import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.krulvis.api.extensions.Utils.waitFor
@@ -11,6 +14,13 @@ private val logger = LoggerFactory.getLogger("TeleportItem")
 
 interface ITeleportItem : Item {
 	fun teleport(destination: String): Boolean
+
+	/***
+	 * Overriding the default filterItems method to make sure that we don't allow name filtering since this will
+	 * allow "Amulet of Glory" as valid teleport item when it doesn't actually have any charges
+	 */
+	override fun <S : SimpleStream<org.powbot.api.rt4.Item, S, FilterParameters>> ItemStream<S>.filterItems(allowNoted: Boolean) =
+		filtered { it.id in ids }
 
 	fun getCharges(): Int
 
@@ -84,7 +94,6 @@ enum class TeleportEquipment(
 	;
 
 	val bestId: Int = ids[0]
-
 	val worseId: Int = ids[ids.size - 1]
 
 	override val stackable: Boolean = false
@@ -92,8 +101,12 @@ enum class TeleportEquipment(
 		return ids.contains(id)
 	}
 
+	/**
+	 * We are returning Int.MAX_VALUE for anything that has 2 or fewer IDS since those items have variations but
+	 * All of them have infinite charges.
+	 */
 	private fun org.powbot.api.rt4.Item.getCharges(): Int {
-		if (ids.size == 1) return Int.MAX_VALUE
+		if (ids.size <= 2) return Int.MAX_VALUE
 		for (i in ids.indices.reversed()) {
 			if (ids[i] == id) {
 				return ids.size - i

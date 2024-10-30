@@ -8,7 +8,10 @@ import org.powbot.api.rt4.Prayer
 const val WARRIOR_GUILD_OPTION = "Warrior Guild"
 const val RADIUS_OPTION = "Kill Radius"
 const val INVENTORY_OPTION = "Inventory"
+const val RUNE_POUCH_OPTION = "Rune Pouch"
+const val QUICK_PRAYER_OPTION = "Quick Prayer"
 const val EQUIPMENT_OPTION = "Equipment"
+const val USE_SPECIAL_OPTION = "Use Special"
 const val SPECIAL_EQUIPMENT_OPTION = "Special Equipment"
 const val MONSTERS_OPTION = "Monsters"
 const val HOP_FROM_PLAYERS_OPTION = "Hop From Players"
@@ -27,9 +30,13 @@ const val BANK_TELEPORT_OPTION = "Bank Teleport"
 const val MONSTER_TELEPORT_OPTION = "Monster Teleport"
 const val MONSTER_AUTO_DESTROY_OPTION = "Auto Kill"
 const val USE_CANNON_OPTION = "Use Cannon"
+const val AUTO_RETALIATE_OPTION = "Auto Retaliate"
 const val CANNON_TILE_OPTION = "Cannon Tile"
 
 val CATACOMBS_AREA = Area(Tile(1589, 10115, 0), Tile(1746, 9976, 0))
+
+val unreachableNpcs = arrayOf("Cave kraken", "Whirlpool", "Kraken")
+fun Npc.unreachable() = name in unreachableNpcs
 
 enum class Superior(val protectPrayer: Prayer.Effect = Prayer.Effect.PROTECT_FROM_MELEE) {
 	CRUSHING_HAND,
@@ -74,7 +81,7 @@ enum class Superior(val protectPrayer: Prayer.Effect = Prayer.Effect.PROTECT_FRO
 	}
 }
 
-val SUPERIORS = listOf(
+val SUPERIORS = arrayOf(
 	"crushing hand",
 	"chasm crawler",
 	"screaming banshee",

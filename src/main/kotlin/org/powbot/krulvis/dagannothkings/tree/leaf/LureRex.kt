@@ -17,9 +17,9 @@ class LureRex(script: DagannothKings) : Leaf<DagannothKings>(script, "LuringRex"
 			if (script.lureTile.distance() > 0) {
 				Movement.step(script.lureTile, 0)
 			}
-		} else if (script.safeTile.distance() > 0) {
-			Movement.step(script.safeTile)
-			waitFor(2500) { script.safeTile.distance() == 0.0 }
+		} else if (script.rexSafeTile.distance() > 0) {
+			Movement.step(script.rexSafeTile)
+			waitFor(2500) { script.rexSafeTile.distance() == 0.0 }
 		}
 	}
 

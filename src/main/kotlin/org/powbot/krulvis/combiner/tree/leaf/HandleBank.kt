@@ -18,6 +18,7 @@ import org.powbot.mobile.script.ScriptManager
 
 class HandleBank(script: Combiner) : Leaf<Combiner>(script, "Handle Bank") {
 	override fun execute() {
+		script.stopProductionTimer()
 		val keepItems = script.items.map { it.key }.toIntArray()
 		if (!Bank.opened()) {
 			val mountedGlory = MountedGloryTeleport.Edgeville.getObject()
