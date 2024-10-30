@@ -2,7 +2,6 @@ package org.powbot.krulvis.api.extensions.requirements
 
 import org.powbot.api.rt4.Inventory
 import org.powbot.krulvis.api.extensions.items.*
-import org.powbot.krulvis.runecrafting.EssencePouch
 
 
 open class InventoryRequirement(
