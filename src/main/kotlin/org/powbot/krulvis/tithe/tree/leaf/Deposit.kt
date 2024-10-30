@@ -12,16 +12,16 @@ import java.util.*
 
 class Deposit(script: TitheFarmer) : Leaf<TitheFarmer>(script, "Depositing") {
 
-    fun getSack(): Optional<GameObject> =
-        Objects.stream(25).name("Sack").nearest().findFirst()
+	fun getSack(): Optional<GameObject> =
+		Objects.stream(25).name("Sack").nearest().findFirst()
 
-    override fun execute() {
-        val sack = getSack()
-        println("Sack: $sack")
-        sack.ifPresent {
-            if (walkAndInteract(it, "Deposit", useMenu = false)) {
-                Condition.wait({ Inventory.stream().id(*Data.HARVEST).isEmpty() }, 150, 20)
-            }
-        }
-    }
+	override fun execute() {
+		val sack = getSack()
+		println("Sack: $sack")
+		sack.ifPresent {
+			if (walkAndInteract(it, "Deposit")) {
+				Condition.wait({ Inventory.stream().id(*Data.HARVEST).isEmpty() }, 150, 20)
+			}
+		}
+	}
 }

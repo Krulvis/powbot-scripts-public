@@ -8,11 +8,10 @@ import org.powbot.api.event.TickEvent
 import org.powbot.api.script.tree.TreeScript
 import org.powbot.krulvis.api.antiban.DelayHandler
 import org.powbot.krulvis.api.antiban.OddsModifier
-import org.powbot.krulvis.api.extensions.randoms.BondPouch
-import org.powbot.krulvis.api.extensions.randoms.RandomHandler
 import org.powbot.krulvis.api.script.painter.ATPaint
 import org.powbot.krulvis.api.extensions.Timer
 import org.powbot.krulvis.api.extensions.Utils.waitFor
+import org.powbot.krulvis.api.extensions.randoms.*
 import org.powbot.mobile.drawing.Rendering
 
 abstract class KrulScript : TreeScript() {
@@ -38,7 +37,7 @@ abstract class KrulScript : TreeScript() {
 	fun waitForTicks(ticks: Int = 1): Boolean {
 		val endTick = this.ticks + ticks
 		val startTimer = System.currentTimeMillis()
-		val waited = waitFor(ticks * 600) { this.ticks >= endTick }
+		val waited = waitFor(ticks * 700) { this.ticks >= endTick }
 		logger.info("waitForTicks($ticks) took ${System.currentTimeMillis() - startTimer} ms")
 		return waited
 	}
@@ -48,7 +47,7 @@ abstract class KrulScript : TreeScript() {
 	val oddsModifier = OddsModifier()
 	val walkDelay = DelayHandler(500, 700, oddsModifier, "Walk Delay")
 	var nextRun: Int = Random.nextInt(1, 6)
-	val randomHandlers = mutableListOf<RandomHandler>(BondPouch())
+	val randomHandlers = mutableListOf(BondPouch(), GrandExchangeGuide(), EquipmentScreen(), DeathRisk())
 
 	override fun poll() {
 		val rh = randomHandlers.firstOrNull { it.validate() }

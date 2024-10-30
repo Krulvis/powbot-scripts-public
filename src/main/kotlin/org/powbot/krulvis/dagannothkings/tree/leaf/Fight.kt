@@ -8,7 +8,6 @@ import org.powbot.krulvis.dagannothkings.Data.King.Companion.king
 class Fight(script: DagannothKings) : Leaf<DagannothKings>(script, "Fighting") {
 	override fun execute() {
 		val king = script.target.king() ?: return
-		val protectionPrayer = king.protectionPrayer
 		val offensivePrayer = king.offensivePrayer
 		if (offensivePrayer != null && !Prayer.prayerActive(offensivePrayer)) {
 			Prayer.prayer(offensivePrayer, true)

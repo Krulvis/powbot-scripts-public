@@ -11,18 +11,22 @@ import org.powbot.krulvis.api.extensions.Utils.waitForDistance
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-const val IDENTIFYER = "fairy ring"
-const val FAIRY_RING_DJR = "DJR $IDENTIFYER (POH)"
-const val FAIRY_RING_BLS = "BLS $IDENTIFYER (POH)"
-const val FAIRY_RING_DLS = "DLS $IDENTIFYER (POH)"
-const val FAIRY_RING_CKS = "CKS $IDENTIFYER (POH)"
-const val FAIRY_RING_ZANARIS = "Zanaris $IDENTIFYER (POH)"
+const val IDENTIFYER = "fairy ring (POH)"
+const val FAIRY_RING_DJR = "DJR $IDENTIFYER"
+const val FAIRY_RING_BLS = "BLS $IDENTIFYER"
+const val FAIRY_RING_DLS = "DLS $IDENTIFYER"
+const val FAIRY_RING_CKS = "CKS $IDENTIFYER"
+const val FAIRY_RING_AKQ = "AKQ $IDENTIFYER"
+const val FAIRY_RING_CKQ = "CKQ $IDENTIFYER"
+const val FAIRY_RING_ZANARIS = "Zanaris $IDENTIFYER"
 
 enum class FairyRingTeleport(override val destination: Tile) : HouseTeleport {
 	DJR(Tile(1455, 3658, 0)),
 	BLS(Tile(1295, 3493, 0)),
 	DLS(Tile(3447, 9824, 0)),
 	CKS(Tile(3447, 3470, 0)),
+	CKQ(Tile(1358, 2941, 0)),
+	AKQ(Tile(2319, 3619, 0)),
 	Zanaris(Tile(2412, 4434, 0)),
 	;
 

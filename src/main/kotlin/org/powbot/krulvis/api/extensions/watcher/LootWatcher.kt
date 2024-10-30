@@ -13,7 +13,13 @@ import java.util.concurrent.CountDownLatch
 import java.util.concurrent.TimeUnit
 import kotlin.math.round
 
-class LootWatcher(val tile: Tile, private val ignoreIds: IntArray, private val radius: Int = 4, private val lootList: MutableList<GroundItem>, private val isLoot: (GroundItem) -> Boolean) :
+class LootWatcher(
+	val tile: Tile,
+	private val ignoreIds: IntArray,
+	private val radius: Int = 4,
+	private val lootList: MutableList<GroundItem>,
+	private val isLoot: (GroundItem) -> Boolean
+) :
 	Watcher() {
 
 	private val logger = LoggerFactory.getLogger(javaClass.simpleName)
@@ -49,7 +55,7 @@ class LootWatcher(val tile: Tile, private val ignoreIds: IntArray, private val r
 	}
 
 	fun waitForLoot(): List<GroundItem> {
-		latch.await(10, TimeUnit.SECONDS)
+		latch.await(5, TimeUnit.SECONDS)
 		return loot
 	}
 

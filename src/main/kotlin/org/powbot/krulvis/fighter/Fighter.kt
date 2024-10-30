@@ -6,6 +6,7 @@ import org.powbot.api.Tile
 import org.powbot.api.event.*
 import org.powbot.api.rt4.*
 import org.powbot.api.rt4.Equipment.Slot
+import org.powbot.api.rt4.magic.Rune
 import org.powbot.api.rt4.walking.model.Skill
 import org.powbot.api.script.*
 import org.powbot.api.script.paint.CheckboxPaintItem
@@ -15,9 +16,8 @@ import org.powbot.krulvis.api.ATContext.dead
 import org.powbot.krulvis.api.ATContext.getPrice
 import org.powbot.krulvis.api.extensions.TargetWidget
 import org.powbot.krulvis.api.extensions.Timer
-import org.powbot.krulvis.api.extensions.items.ITeleportItem
-import org.powbot.krulvis.api.extensions.items.Potion
-import org.powbot.krulvis.api.extensions.items.TeleportEquipment
+import org.powbot.krulvis.api.extensions.items.*
+import org.powbot.krulvis.api.extensions.items.Weapon.Companion.weapon
 import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
 import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
 import org.powbot.krulvis.api.extensions.requirements.ItemRequirement
@@ -29,11 +29,13 @@ import org.powbot.krulvis.api.extensions.teleports.poh.openable.*
 import org.powbot.krulvis.api.script.KillerScript
 import org.powbot.krulvis.api.script.UniqueLootTracker
 import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.tree.branch.RunePouchScript
 import org.powbot.krulvis.api.script.tree.branch.ShouldConsume
 import org.powbot.krulvis.api.script.tree.branch.ShouldSipPotion
 import org.powbot.krulvis.fighter.Defender.currentDefenderIndex
 import org.powbot.krulvis.fighter.Superior.Companion.superior
 import org.powbot.krulvis.fighter.tree.branch.ShouldStop
+import org.powbot.mobile.script.ScriptManager
 import kotlin.math.floor
 import kotlin.random.Random
 
@@ -43,7 +45,7 @@ import kotlin.random.Random
 	name = "krul Fighter",
 	description = "Fights anything, anywhere. Supports defender collecting.",
 	author = "Krulvis",
-	version = "1.5.8",
+	version = "1.6.2",
 	markdownFileName = "Fighter.md",
 	scriptId = "d3bb468d-a7d8-4b78-b98f-773a403d7f6d",
 	category = ScriptCategory.Combat,
@@ -59,12 +61,27 @@ import kotlin.random.Random
 			optionType = OptionType.INVENTORY
 		),
 		ScriptConfiguration(
+			RUNE_POUCH_OPTION, "What runes should be in rune pouch?",
+			optionType = OptionType.STRING, visible = false, defaultValue = ""
+		),
+		ScriptConfiguration(
+			QUICK_PRAYER_OPTION, "Which quick prayers should be used?",
+			optionType = OptionType.STRING, visible = false, defaultValue = ""
+		),
+		ScriptConfiguration(
 			PRAY_AT_ALTAR_OPTION, "Pray at nearby altar.",
 			optionType = OptionType.BOOLEAN, defaultValue = "false"
 		),
 		ScriptConfiguration(
 			EQUIPMENT_OPTION, "What gear do you want to use?",
 			optionType = OptionType.EQUIPMENT, visible = true
+		),
+		ScriptConfiguration(USE_SPECIAL_OPTION, "Use special attack?", optionType = OptionType.BOOLEAN),
+		ScriptConfiguration(
+			SPECIAL_EQUIPMENT_OPTION,
+			"What to wear during special attack?",
+			OptionType.EQUIPMENT,
+			visible = false
 		),
 		ScriptConfiguration(
 			MONSTERS_OPTION,
@@ -120,7 +137,7 @@ import kotlin.random.Random
 			LOOT_OVERRIDES_OPTION,
 			"Separate items with \",\" Start with \"!\" to never loot",
 			optionType = OptionType.STRING,
-			defaultValue = "Long bone, curved bone, clue, totem, !blue dragon scale, Scaly blue dragonhide, toadflax, irit, avantoe, kwuarm, snapdragon, cadantine, lantadyme, dwarf weed, torstol"
+			defaultValue = "Long bone, curved bone, clue, totem, !talisman, !blue dragon scale, Scaly blue dragonhide, toadflax, irit, avantoe, kwuarm, snapdragon, cadantine, lantadyme, dwarf weed, torstol"
 		),
 		ScriptConfiguration(
 			BURY_BONES_OPTION, "Bury, Scatter or Offer bones&ashes.",
@@ -128,6 +145,7 @@ import kotlin.random.Random
 		),
 
 		ScriptConfiguration(USE_CANNON_OPTION, "Use a cannon?", OptionType.BOOLEAN, "false"),
+		ScriptConfiguration(AUTO_RETALIATE_OPTION, "Only auto-retaliate?", OptionType.BOOLEAN, visible = false),
 		ScriptConfiguration(CANNON_TILE_OPTION, "Where to place cannon?", OptionType.TILE, visible = false),
 		ScriptConfiguration(
 			BANK_TELEPORT_OPTION,
@@ -144,12 +162,12 @@ import kotlin.random.Random
 			defaultValue = USE_WEB_OPTION,
 			allowedValues = [USE_WEB_OPTION, DISABLE_TELEPORTS_OPTION, EDGEVILLE_GLORY, EDGEVILLE_MOUNTED_GLORY, FEROX_ENCLAVE_ROD, FEROX_ENCLAVE_JEWELLERY_BOX,
 				CASTLE_WARS_ROD, CASTLE_WARS_JEWELLERY_BOX, LUNAR_ISLE_HOUSE_PORTAL, POISON_WASTE_SPIRIT_TREE_POH,
-				STRONGHOLD_SLAYER, FREMENNIK_SLAYER, MORYTANIA_SLAYER, MOUNT_KARUULM_BLESSING, FAIRY_RING_CKS, LAVA_MAZE_BURNING, BANDIT_CAMP_BURNING]
+				STRONGHOLD_SLAYER, FREMENNIK_SLAYER, MORYTANIA_SLAYER, MOUNT_KARUULM_BLESSING, FAIRY_RING_AKQ, FAIRY_RING_CKS, FAIRY_RING_DJR, LAVA_MAZE_BURNING, BANDIT_CAMP_BURNING]
 		)
 	]
 )
 //</editor-fold>
-class Fighter : KillerScript(), UniqueLootTracker {
+class Fighter : KillerScript(), UniqueLootTracker, RunePouchScript {
 
 	override fun createPainter(): ATPaint<*> = FighterPainter(this)
 
@@ -174,6 +192,13 @@ class Fighter : KillerScript(), UniqueLootTracker {
 				it.amount = teleportItemReqs[it.item]!!
 			}
 		}
+
+		if (specialAttack && specWeapon == Weapon.NIL) {
+			Notifications.showNotification("${specialEquipment.firstOrNull { it.slot == Slot.MAIN_HAND }?.item?.itemName} not supported as spec weapon. Contact Krulvis for support.")
+			ScriptManager.stop()
+		}
+
+		logger.info("Using cannon=${useCannon}, tile=${cannonTile}")
 	}
 
 	//<editor-fold desc="UISubscribers">
@@ -192,9 +217,42 @@ class Fighter : KillerScript(), UniqueLootTracker {
 		}
 	}
 
+	@ValueChanged(INVENTORY_OPTION)
+	fun onInventory(inventory: Map<Int, Int>) {
+		val ids = inventory.keys.toList()
+
+		//RunePouch
+		if (ids.contains(RunePouch.id)) {
+			updateVisibility(RUNE_POUCH_OPTION, true)
+			updateOption(
+				RUNE_POUCH_OPTION,
+				RunePouch.runes()
+					.filterNot { it.first == Rune.NIL }
+					.joinToString(",") { it.first.name },
+				OptionType.STRING
+			)
+		} else {
+			updateVisibility(RUNE_POUCH_OPTION, false)
+		}
+
+		//Prayer
+		if (ids.any { Potion.isPrayerPotion(it) }) {
+			updateVisibility(QUICK_PRAYER_OPTION, true)
+			updateOption(QUICK_PRAYER_OPTION, Prayer.quickPrayers().joinToString(",") { it.name }, OptionType.STRING)
+		} else {
+			updateVisibility(QUICK_PRAYER_OPTION, false)
+		}
+	}
+
+	@ValueChanged(USE_SPECIAL_OPTION)
+	fun onSpecial(special: Boolean) {
+		updateVisibility(SPECIAL_EQUIPMENT_OPTION, special)
+	}
+
 	@ValueChanged(USE_CANNON_OPTION)
 	fun onUseCannon(useCannon: Boolean) {
 		updateVisibility(CANNON_TILE_OPTION, useCannon)
+		updateVisibility(AUTO_RETALIATE_OPTION, useCannon)
 	}
 
 
@@ -221,6 +279,12 @@ class Fighter : KillerScript(), UniqueLootTracker {
 	private val inventoryOptions by lazy { getOption<Map<Int, Int>>(INVENTORY_OPTION) }
 	val requiredInventory by lazy { inventoryOptions.map { InventoryRequirement(it.key, it.value) } }
 
+	override val minRuneCount: Int by lazy { RunePouch.runes().minOfOrNull { it.second } ?: 10 }
+	override val runePouchRunes by lazy {
+		getOption<String>(RUNE_POUCH_OPTION).split(",").filterNot { it == "NIL" }
+			.map { Rune.getRune(it) }.toTypedArray()
+	}
+
 	//Equipment
 	fun getEquipment(optionKey: String): List<EquipmentRequirement> {
 		val option = getOption<Map<Int, Int>>(optionKey)
@@ -234,15 +298,20 @@ class Fighter : KillerScript(), UniqueLootTracker {
 	}
 
 	val equipment by lazy { getEquipment(EQUIPMENT_OPTION) }
+	val specialAttack by lazy { getOption<Boolean>(USE_SPECIAL_OPTION) }
+	val specialEquipment by lazy { getEquipment(SPECIAL_EQUIPMENT_OPTION) }
+	val specWeapon by lazy {
+		specialEquipment.weapon()
+	}
+
+	fun shouldSpec() = specialAttack && specWeapon.canSpecial()
+		&& (!specWeapon.statReducer || (!reducedStats && currentTarget.healthPercent() >= 80))
 
 	val ammo by lazy {
 		equipment.firstOrNull { it.slot == Slot.QUIVER }
 	}
 	override val ammoIds by lazy { intArrayOf(ammo?.item?.id ?: -1) }
 
-	val teleportEquipments by lazy {
-		equipment.mapNotNull { TeleportEquipment.getTeleportEquipment(it.item.id) }
-	}
 
 	//Loot
 	var superiorsSpawned = 0
@@ -302,19 +371,23 @@ class Fighter : KillerScript(), UniqueLootTracker {
 
 	//monsters Killing spot
 	private val monsters by lazy {
-		getOption<List<NpcActionEvent>>(MONSTERS_OPTION).map { it.name }
+		getOption<List<NpcActionEvent>>(MONSTERS_OPTION).map { it.name.lowercase() }.toTypedArray()
 	}
 	val monsterTeleport by lazy { TeleportMethod(Teleport.forName(getOption(MONSTER_TELEPORT_OPTION))) }
 	val aggressionTimer = Timer(15 * 60 * 1000)
 
-	private val monsterNames: List<String> get() = if (superiorActive) SUPERIORS else monsters
+	private val monsterNames: Array<String> get() = if (superiorActive) SUPERIORS else monsters
 	fun nearbyMonsters(): List<Npc> =
-		Npcs.stream().within(centerTile, killRadius.toDouble()).name(*monsterNames.toTypedArray()).nearest().list()
+		Npcs.stream().within(centerTile, killRadius.toDouble()).filtered {
+			val name = it.name.lowercase()
+			"reanimated" in name || name in monsterNames
+		}.nearest().list()
 
 	private fun Npc.attackingOtherPlayer(): Boolean {
 		val interacting = interacting()
 		return interacting is Player && interacting != Players.local()
 	}
+
 
 	fun target(): Npc {
 		val local = Players.local()
@@ -324,7 +397,7 @@ class Fighter : KillerScript(), UniqueLootTracker {
 			}.sortedBy { it.distance() }
 		val attackingMe =
 			nearbyMonsters.firstOrNull { it.interacting() is Npc || it.interacting() == local }
-		return attackingMe ?: nearbyMonsters.firstOrNull { it.reachable() } ?: Npc.Nil
+		return attackingMe ?: nearbyMonsters.firstOrNull { it.unreachable() || it.reachable() } ?: Npc.Nil
 	}
 
 	//Safespot options
@@ -355,12 +428,17 @@ class Fighter : KillerScript(), UniqueLootTracker {
 	var nextAltarPrayRestore = Random.nextInt(5, 15)
 
 	private val prayerItems = arrayOf("Bonecrusher", "Bonecrusher necklace", "Ash sanctifier")
-	private val usingPrayer by lazy {
+	val usingPrayer by lazy {
 		prayAtNearbyAltar
 			|| requiredInventory.filter { it.item is Potion }
 			.any { (it.item as Potion).skill == Constants.SKILLS_PRAYER }
 			|| (CATACOMBS_AREA.contains(centerTile) && requiredInventory.any { it.item.itemName in prayerItems })
 			|| (CATACOMBS_AREA.contains(centerTile) && buryBones)
+	}
+
+	val quickPrayers by lazy {
+		getOption<String>(QUICK_PRAYER_OPTION).split(",")
+			.mapNotNull { pray -> Prayer.Effect.values().firstOrNull { it.name == pray } }.toTypedArray()
 	}
 
 	fun canActivateQuickPrayer() = usingPrayer && !Prayer.quickPrayer() && Prayer.prayerPoints() > 0
@@ -369,9 +447,8 @@ class Fighter : KillerScript(), UniqueLootTracker {
 
 	//Cannon option
 	val useCannon by lazy { getOption<Boolean>(USE_CANNON_OPTION) }
+	val autoRetaliate by lazy { getOption<Boolean>(AUTO_RETALIATE_OPTION) }
 	val cannonTile by lazy { getOption<Tile>(CANNON_TILE_OPTION) }
-	fun getCannon() =
-		Objects.stream(cannonTile, GameObject.Type.INTERACTIVE).name("Broken multicannon", "Dwarf multicannon").first()
 
 	//Custom slayer options
 	var lastTask = false
@@ -380,13 +457,14 @@ class Fighter : KillerScript(), UniqueLootTracker {
 	@Subscribe
 	fun experienceEvent(xpEvent: SkillExpGainedEvent) {
 		if (xpEvent.skill == Skill.Slayer) {
-			logger.info("Slayer xp at: ${System.currentTimeMillis()}, cycle=${Game.cycle()}")
+//			logger.info("Slayer xp at: ${System.currentTimeMillis()}, cycle=${Game.cycle()}")
 		} else if (xpEvent.skill == Skill.Hitpoints) {
 			val dmg = floor(xpEvent.expGained / 1.33).toInt()
 			if (TargetWidget.health() - dmg <= 0 && hasSlayerBracelet && !wearingSlayerBracelet()) {
 				val slayBracelet = getSlayerBracelet()
 				if (slayBracelet.valid()) {
-					logger.info("Wearing bracelet on xp drop ${System.currentTimeMillis()}, cycle=${Game.cycle()}")
+					shouldWearSlayerBracelet = true
+//					logger.info("Wearing bracelet on xp drop ${System.currentTimeMillis()}, cycle=${Game.cycle()}")
 					slayBracelet.fclick()
 				}
 			}
@@ -448,6 +526,7 @@ class Fighter : KillerScript(), UniqueLootTracker {
 			*equipment.flatMap { it.item.ids.toList() }.toIntArray()
 		)
 	}
+
 }
 
 

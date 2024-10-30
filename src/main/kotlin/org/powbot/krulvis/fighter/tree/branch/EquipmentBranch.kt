@@ -40,8 +40,9 @@ class ShouldEquipGear(script: Fighter) : Branch<Fighter>(script, "Should equip g
 
 	val equipTimer = Timer(600)
 	override fun validate(): Boolean {
-		if (!equipTimer.isFinished()) return false
-		missingGear = script.equipment.filter { !it.meets() }
+		if (script.shouldWearSlayerBracelet || !equipTimer.isFinished()) return false
+		val gear = if (script.shouldSpec()) script.specialEquipment else script.equipment
+		missingGear = gear.filter { !it.meets() }
 		return missingGear.isNotEmpty()
 	}
 }

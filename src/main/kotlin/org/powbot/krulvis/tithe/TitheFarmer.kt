@@ -154,48 +154,6 @@ class TitheFarmer : KrulScript() {
 		}
 	}
 
-	fun interact(
-		target: Interactive?,
-		action: String,
-		selectItem: Int = -1,
-		useMenu: Boolean = true
-	): Boolean {
-		val t = target ?: return false
-		val name = (t as Nameable).name()
-		val pos = (t as Locatable).tile()
-		val destination = Movement.destination()
-		turnRunOn()
-		if (!t.inViewport()
-			|| (destination != pos && pos.distanceTo(if (destination == Tile.Nil) Players.local() else destination) > 12)
-		) {
-			logger.info("Walking before interacting... in viewport: ${t.inViewport()}")
-			if (pos.matrix().onMap()) {
-				Movement.step(pos)
-			} else {
-				LocalPathFinder.findWalkablePath(pos).traverse()
-			}
-		}
-		val selectedId = Inventory.selectedItem().id()
-		if (selectedId != selectItem) {
-			Game.tab(Game.Tab.INVENTORY)
-			if (selectItem > -1) {
-				Inventory.stream().id(selectItem).firstOrNull()?.interact("Use")
-			} else {
-				Inventory.stream().id(selectedId).firstOrNull()?.click()
-			}
-
-		}
-		val interactBool =
-			if (name == null || name == "null" || name.isEmpty()) t.interact(action, useMenu) else t.interact(
-				action,
-				name,
-				useMenu
-			)
-		return Condition.wait {
-			Inventory.selectedItemIndex() == -1 || Inventory.selectedItem().id() == selectItem
-		} && interactBool
-	}
-
 	fun turnRunOn(): Boolean {
 		if (Movement.running()) {
 			return true

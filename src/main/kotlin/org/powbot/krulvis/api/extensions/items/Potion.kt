@@ -119,13 +119,10 @@ enum class Potion(
 		return inInventory()
 	}
 
-	override fun withdrawExact(amount: Int, worse: Boolean, wait: Boolean): Boolean {
-		return super.withdrawExact(amount, worse = false, wait = true)
-	}
-
 	companion object {
 
 		private val logger = LoggerFactory.getLogger("Potion")
+		private val PRAYER_POTIONS = arrayOf(PRAYER, SUPER_RESTORE)
 		var antiFireTimer = Timer(1)
 
 		fun isHighOnStamina(): Boolean {
@@ -154,7 +151,8 @@ enum class Potion(
 		fun hasAntipot(): Boolean = getAntipot() != null
 		fun hasAntipotBank(): Boolean = getAntipotBank() != null
 
-		fun getPrayerPotion(): Potion? = listOf(PRAYER, SUPER_RESTORE).firstOrNull { it.hasWith() }
+		fun getPrayerPotion(): Potion? = PRAYER_POTIONS.firstOrNull { it.hasWith() }
+		fun isPrayerPotion(id: Int) = forId(id) in PRAYER_POTIONS
 	}
 
 

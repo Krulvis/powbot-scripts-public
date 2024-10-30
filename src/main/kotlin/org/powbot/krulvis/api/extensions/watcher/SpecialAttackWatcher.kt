@@ -4,7 +4,6 @@ import com.google.common.eventbus.Subscribe
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import org.powbot.api.event.TickEvent
-import org.powbot.api.rt4.Combat
 import org.powbot.api.rt4.Npc
 import org.slf4j.LoggerFactory
 import java.util.concurrent.CountDownLatch
@@ -20,7 +19,6 @@ class SpecialAttackWatcher(val npc: Npc, val onHit: (Boolean) -> Unit) :
 	val active get() = latch.count >= 1
 	var startHp = npc.healthPercent()
 	val startSplat = npc.hitsplatCycles()
-	var startSpecial = Combat.specialPercentage()
 	var hit = false
 
 	init {
@@ -28,7 +26,6 @@ class SpecialAttackWatcher(val npc: Npc, val onHit: (Boolean) -> Unit) :
 		GlobalScope.launch {
 			waitForHit()
 			logger.info("Waiting attack: ${round((System.currentTimeMillis() - startMilis) / 100.0) / 10.0}, hit=$hit")
-			latch.countDown()
 			unregister()
 			onHit(hit)
 		}
@@ -42,7 +39,8 @@ class SpecialAttackWatcher(val npc: Npc, val onHit: (Boolean) -> Unit) :
 		}
 	}
 
-	fun waitForHit() {
-		latch.await(10, TimeUnit.SECONDS)
+	private fun waitForHit() {
+		latch.await(5, TimeUnit.SECONDS)
+		latch.countDown()
 	}
 }

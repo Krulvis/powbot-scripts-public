@@ -8,6 +8,7 @@ import org.powbot.krulvis.api.ATContext.stripNumbersAndCharges
 import org.powbot.krulvis.api.extensions.Utils.waitFor
 import org.powbot.mobile.rscache.loader.ItemLoader
 import org.powbot.mobile.script.ScriptManager
+import org.powbot.mobile.script.daemon.SingleTap
 import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("EquipmentItem")
@@ -16,6 +17,10 @@ class EquipmentItem(override val id: Int, override val slot: Equipment.Slot) : I
 	override val ids: IntArray = intArrayOf(id)
 	override val itemName: String by lazy { ItemLoader.lookup(id)!!.name().stripNumbersAndCharges() }
 	override val stackable: Boolean by lazy { ItemLoader.lookup(id)!!.stackable() }
+
+	companion object {
+		val Nil = EquipmentItem(-1, Equipment.Slot.QUIVER)
+	}
 }
 
 interface IEquipmentItem : Item {

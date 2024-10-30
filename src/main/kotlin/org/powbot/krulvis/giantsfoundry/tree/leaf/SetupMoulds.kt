@@ -93,6 +93,7 @@ class SetupMoulds(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Setup mo
 				script.logger.info("notSelected=${mouldType}, bestMouldName=${bestMould.first.name()}, jigName=${script.jig().name}")
 			}
 		} else if (Bank.close()) {
+			script.logger.info("MouldWidget is not open, interacting with jig=$jig")
 			if (jig.interact(action)) {
 				waitFor { script.mouldWidgetOpen() }
 			}

@@ -8,16 +8,17 @@ import org.powbot.krulvis.api.ATContext.maxHP
 import org.powbot.krulvis.api.ATContext.walkAndInteract
 import org.powbot.krulvis.api.extensions.House
 import org.powbot.krulvis.api.extensions.House.Pool.Companion.pool
-import org.powbot.krulvis.api.extensions.teleports.Teleport
 import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.krulvis.api.extensions.Utils.waitFor
 import org.powbot.krulvis.api.extensions.Utils.waitForDistance
+import org.powbot.krulvis.api.extensions.teleports.Teleport
 
 interface HouseTeleport : Teleport {
 	override fun execute(): Boolean {
 		logger.info("Executing ${toString()}")
 		if (!House.isInside()) {
-			val cape = Equipment.stream().nameContains("Construction cape").first()
+			val cape = Equipment.stream().nameContains("Construct. cape").firstOrNull() ?: Inventory.stream()
+				.nameContains("Construct. cape").first()
 			val tab = Inventory.stream().name("Teleport to house").first()
 			val portal = Objects.stream(50).type(GameObject.Type.INTERACTIVE).name("Portal").action("Home").first()
 			if (portal.valid()) {
@@ -25,7 +26,7 @@ interface HouseTeleport : Teleport {
 					waitFor(5000) { House.isInside() }
 				}
 			} else if (cape.valid()) {
-				if (cape.interact("Inside")) {
+				if (cape.interact("Tele to POH")) {
 					waitFor(5000) { House.isInside() }
 				}
 			} else if (tab.valid()) {

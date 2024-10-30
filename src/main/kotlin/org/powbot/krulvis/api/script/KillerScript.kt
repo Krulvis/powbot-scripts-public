@@ -9,6 +9,7 @@ import org.powbot.api.script.ScriptState
 import org.powbot.krulvis.api.ATContext.me
 import org.powbot.krulvis.api.extensions.watcher.LootWatcher
 import org.powbot.krulvis.api.extensions.watcher.NpcDeathWatcher
+import org.powbot.krulvis.api.extensions.watcher.SpecialAttackWatcher
 import org.powbot.mobile.script.ScriptManager
 
 abstract class KillerScript(val dodgeProjectiles: Boolean = true) : KrulScript(), Looting {
@@ -21,6 +22,7 @@ abstract class KillerScript(val dodgeProjectiles: Boolean = true) : KrulScript()
 	private val slayerBraceletNames = arrayOf("Bracelet of slaughter", "Expeditious bracelet")
 	fun getSlayerBracelet() = Inventory.stream().name(*slayerBraceletNames).first()
 	val hasSlayerBracelet by lazy { getSlayerBracelet().valid() }
+	var shouldWearSlayerBracelet = false
 	fun wearingSlayerBracelet() = Equipment.stream().name(*slayerBraceletNames).isNotEmpty()
 
 	var reducedStats = false
@@ -44,16 +46,20 @@ abstract class KillerScript(val dodgeProjectiles: Boolean = true) : KrulScript()
 		if (hasSlayerBracelet && !wearingSlayerBracelet()) {
 			val slayBracelet = getSlayerBracelet()
 			if (slayBracelet.valid()) {
+				shouldWearSlayerBracelet = true
 				getSlayerBracelet().fclick()
 				logger.info("Wearing bracelet on death at ${System.currentTimeMillis()}, cycle=${Game.cycle()}")
 			}
 		}
-		watchLootDrop(npc.tile())
+		watchLootDrop(if (npc.name.contains("kraken", true)) me.tile() else npc.tile())
 	}
 
 	private fun setCurrentTarget() {
 		val interacting = me.interacting()
 		if (interacting is Npc && interacting != Npc.Nil) {
+			if ((interacting.valid() && interacting != currentTarget) || interacting.healthPercent() > 10) {
+				shouldWearSlayerBracelet = false
+			}
 			currentTarget = interacting
 			val activeLW = lootWachter
 			if (activeLW?.active == true && activeLW.tile.distanceTo(currentTarget.tile()) < 2) return
@@ -66,11 +72,18 @@ abstract class KillerScript(val dodgeProjectiles: Boolean = true) : KrulScript()
 		deathWatchers.removeAll { !it.active }
 	}
 
+	var specWatcher: SpecialAttackWatcher? = null
+
 	@Subscribe
 	fun onKillerTickEvent(_e: TickEvent) {
 		if (ScriptManager.state() != ScriptState.Running) return
 		setCurrentTarget()
-
+		val sWatcher = specWatcher
+		if ((sWatcher == null || !sWatcher.active) && Combat.specialAttack()) {
+			specWatcher = SpecialAttackWatcher(currentTarget) {
+				reducedStats = true
+			}
+		}
 		projectiles.forEach {
 			if (Game.cycle() > it.cycleEnd) {
 				projectiles.remove(it)

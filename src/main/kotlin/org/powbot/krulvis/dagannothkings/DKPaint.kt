@@ -13,6 +13,11 @@ class DKPaint(script: DagannothKings) : ATPaint<DagannothKings>(script) {
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder
 			.addString("Kills") { perHourText(script.kills) }
+			.addString("Pray") { script.forcedProtectionPrayer.toString() }
+			.addString("Attacks") {
+				val kingAnimTicks = script.animMap.toList().sortedBy { it.second }
+				kingAnimTicks.joinToString { "${it.first}: ${it.second}" }
+			}
 			.addString("Target") { "${script.target.name}, valid=${script.target.valid()}, dead=${script.target.dead()}" }
 			.build()
 	}
@@ -21,11 +26,12 @@ class DKPaint(script: DagannothKings) : ATPaint<DagannothKings>(script) {
 	override fun paintCustom(g: Rendering) {
 		if (script.lureTile != Tile.Nil) {
 			script.lureTile.drawOnScreen(outlineColor = Color.ORANGE)
-			script.safeTile.drawOnScreen(outlineColor = Color.GREEN)
+			script.rexSafeTile.drawOnScreen(outlineColor = Color.GREEN)
 			val t = me.tile()
 			val target = script.target
 			if (target.valid()) {
-				target.tile().drawOnScreen(target.distanceTo(t).toString() + " " + target.distanceTo(script.rexTile), Color.RED)
+				target.tile()
+					.drawOnScreen(target.distanceTo(t).toString() + " " + target.distanceTo(script.rexTile), Color.RED)
 			}
 			val x = 10
 			var y = 25
@@ -38,8 +44,6 @@ class DKPaint(script: DagannothKings) : ATPaint<DagannothKings>(script) {
 				g.drawString(it.name + "kill=${it.kill}, respawnTime=${it.respawnTimer}", x, y)
 				y += yy
 			}
-		} else {
-			script.logger.info("LureTile still is nill")
 		}
 	}
 }

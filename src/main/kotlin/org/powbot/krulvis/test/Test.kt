@@ -1,11 +1,14 @@
 package org.powbot.krulvis.test
 
+import org.powbot.api.Tile
+
 
 fun main() {
-	val listi = listOf(0, 1, 2, 3, 4, 5, 6)
+	val varp = 1040189392
 
-	listi.forEachIndexed { i, it ->
-		println("$i, / 3 = ${(i -  1 )/ 2}")
-	}
-
+	val c = varp
+	val x = (c.shr(14) and 0x3FFF) + 1
+	val y = (c and 0x3FFF) + 1
+	val z = c.shr(28) and 0x3
+	println("X=${x}, Y=${y}, Z=${z}")
 }

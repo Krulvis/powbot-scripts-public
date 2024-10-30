@@ -5,6 +5,7 @@ import org.powbot.api.Tile
 import org.powbot.api.event.*
 import org.powbot.api.rt4.*
 import org.powbot.api.rt4.Equipment.Slot
+import org.powbot.api.rt4.Prayer
 import org.powbot.api.rt4.walking.model.Skill
 import org.powbot.api.script.*
 import org.powbot.api.script.paint.CheckboxPaintItem

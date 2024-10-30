@@ -4,6 +4,7 @@ import org.powbot.api.rt4.Actor
 import org.powbot.api.rt4.Movement
 import org.powbot.api.rt4.Players
 import org.powbot.api.script.tree.Branch
+import org.powbot.api.script.tree.SimpleLeaf
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.gargoyle
 import org.powbot.krulvis.api.extensions.TargetWidget
