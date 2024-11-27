@@ -6,12 +6,11 @@ import org.powbot.api.event.GameActionEvent
 import org.powbot.api.event.GameActionOpcode
 import org.powbot.api.event.PaintCheckboxChangedEvent
 import org.powbot.api.rt4.*
-import org.powbot.api.rt4.walking.local.LocalPathFinder
 import org.powbot.api.script.*
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.Timer
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.tithe.Data.NAMES
 import org.powbot.krulvis.tithe.tree.branch.ShouldStart
 import org.powbot.krulvis.tithe.tree.leaf.Refill
@@ -52,7 +51,7 @@ class TitheFarmer : KrulScript() {
 	val chillTimer = Timer(5000)
 	var planting = false
 
-	override fun createPainter(): ATPaint<*> {
+	override fun createPainter(): KrulPaint<*> {
 		return TithePainter(this)
 	}
 
@@ -153,17 +152,6 @@ class TitheFarmer : KrulScript() {
 			lastRound = e.checked
 		}
 	}
-
-	fun turnRunOn(): Boolean {
-		if (Movement.running()) {
-			return true
-		}
-		if (Movement.energyLevel() >= Random.nextInt(1, 5)) {
-			return Widgets.widget(Constants.MOVEMENT_MAP).component(Constants.MOVEMENT_RUN_ENERGY - 1).click()
-		}
-		return false
-	}
-
 
 }
 

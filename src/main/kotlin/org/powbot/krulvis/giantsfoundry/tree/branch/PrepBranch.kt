@@ -8,6 +8,7 @@ import org.powbot.api.rt4.Objects
 import org.powbot.api.script.tree.Branch
 import org.powbot.api.script.tree.SimpleLeaf
 import org.powbot.api.script.tree.TreeComponent
+import org.powbot.krulvis.api.ATContext.walkAndInteract
 import org.powbot.krulvis.api.extensions.Utils.long
 import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.krulvis.api.extensions.Utils.waitFor
@@ -33,7 +34,7 @@ class CanTakeSword(script: GiantsFoundry) : Branch<GiantsFoundry>(script, "Can t
 	override val failedComponent: TreeComponent<GiantsFoundry> = HasSetupMoulds(script)
 	override val successComponent: TreeComponent<GiantsFoundry> = SimpleLeaf(script, "Take Sword") {
 		val jig = script.jig()
-		if (script.interactObj(jig, "Pick-up")) {
+		if (walkAndInteract(jig, "Pick-up")) {
 			waitFor(long()) { script.isSmithing() }
 		}
 	}
@@ -59,7 +60,7 @@ class IsCrucibleFull(script: GiantsFoundry) : Branch<GiantsFoundry>(script, "Is 
 		val crucible = Objects.stream(30)
 			.type(GameObject.Type.INTERACTIVE)
 			.name("Crucible (full)").firstOrNull() ?: return@SimpleLeaf
-		if (script.interactObj(crucible, "Pour")) {
+		if (walkAndInteract(crucible, "Pour")) {
 			val jig = script.jig()
 			if (jig.valid() && script.POURING_TILE.distance() <= 1) {
 				sleep(Random.nextInt(1000, 1500))

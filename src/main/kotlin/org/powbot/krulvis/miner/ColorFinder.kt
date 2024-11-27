@@ -13,7 +13,7 @@ import org.powbot.api.script.tree.SimpleLeaf
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.items.Ore.Companion.hasOre
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.mobile.drawing.Rendering
 
 @ScriptManifest(
@@ -25,7 +25,7 @@ import org.powbot.mobile.drawing.Rendering
         category = ScriptCategory.Mining
 )
 class ColorFinder : KrulScript() {
-    override fun createPainter(): ATPaint<*> {
+    override fun createPainter(): KrulPaint<*> {
         return Painter(this)
     }
 
@@ -43,7 +43,7 @@ class ColorFinder : KrulScript() {
     }
 }
 
-class Painter(script: ColorFinder) : ATPaint<ColorFinder>(script) {
+class Painter(script: ColorFinder) : KrulPaint<ColorFinder>(script) {
     override fun buildPaint(paintBuilder: PaintBuilder): Paint {
         return paintBuilder.build()
     }

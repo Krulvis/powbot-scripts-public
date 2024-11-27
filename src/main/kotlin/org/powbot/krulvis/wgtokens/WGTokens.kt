@@ -10,7 +10,7 @@ import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.containsAll
 import org.powbot.krulvis.api.extensions.items.Food
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.wgtokens.tree.branch.ShouldEat
 import org.powbot.mobile.script.ScriptManager
 
@@ -33,7 +33,7 @@ import org.powbot.mobile.script.ScriptManager
     ]
 )
 class WGTokens : KrulScript() {
-    override fun createPainter(): ATPaint<*> {
+    override fun createPainter(): KrulPaint<*> {
         return WGTokensPaint(this)
     }
 

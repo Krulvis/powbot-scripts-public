@@ -9,7 +9,7 @@ import org.powbot.krulvis.api.antiban.DelayHandler
 import org.powbot.krulvis.api.antiban.OddsModifier
 import org.powbot.krulvis.api.extensions.items.Item.Companion.TINDERBOX
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.woodcutter.tree.branch.ShouldBurn
 
 @ScriptManifest(
@@ -114,7 +114,7 @@ class Woodcutter : KrulScript() {
 
     fun nest() = GroundItems.stream().within(10.0).name("Bird nest").firstOrNull()
 
-    override fun createPainter(): ATPaint<*> = WoodcutterPainter(this)
+    override fun createPainter(): KrulPaint<*> = WoodcutterPainter(this)
 
     override val rootComponent: TreeComponent<*> = ShouldBurn(this)
 

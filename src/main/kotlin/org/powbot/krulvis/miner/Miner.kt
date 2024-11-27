@@ -12,7 +12,7 @@ import org.powbot.krulvis.api.ATContext.containsOneOf
 import org.powbot.krulvis.api.antiban.DelayHandler
 import org.powbot.krulvis.api.extensions.items.Ore.Companion.hasOre
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.Utils.waitFor
 import org.powbot.krulvis.miner.Data.TOP_POLY
 import org.powbot.krulvis.miner.tree.branch.ShouldFixStrut
@@ -94,7 +94,7 @@ class Miner : KrulScript() {
 	var lastPayDirtDrop = 0L
 	var waterskins = false
 
-	override fun createPainter(): ATPaint<*> = MinerPainter(this)
+	override fun createPainter(): KrulPaint<*> = MinerPainter(this)
 
 	override val rootComponent: TreeComponent<*> = ShouldFixStrut(this)
 

@@ -18,35 +18,30 @@ enum class Orb(
 	val obeliskTile: Tile,
 	val spell: Magic.Spell,
 	val bank: BankLocation,
-	vararg val requirements: ItemRequirement
 ) {
 	WATER(
 		571,
 		Tile(2845, 3424, 0),
 		Magic.Spell.CHARGE_WATER_ORB,
 		BankLocation.FALADOR_WEST_BANK,
-		InventoryRequirement(RUNE_POUCH, 1),
 	),
 	FIRE(
 		569,
 		Tile(2818, 9828, 0),
 		Magic.Spell.CHARGE_FIRE_ORB,
 		BankLocation.FALADOR_WEST_BANK,
-		InventoryRequirement(RUNE_POUCH, 1),
 	),
 	EARTH(
 		575,
 		Tile.Nil,
 		Magic.Spell.CHARGE_EARTH_ORB,
 		BankLocation.EDGEVILLE_BANK,
-		EquipmentRequirement(TeleportEquipment.GLORY)
 	),
 	AIR(
 		573,
 		Tile.Nil,
 		Magic.Spell.CHARGE_AIR_ORB,
 		BankLocation.EDGEVILLE_BANK,
-		EquipmentRequirement(TeleportEquipment.GLORY)
 	);
 
 	val logger = LoggerFactory.getLogger(javaClass.simpleName)

@@ -9,7 +9,7 @@ import org.powbot.api.script.paint.InventoryItemPaintItem
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.items.*
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.smither.tree.branch.ShouldBank
 
 @ScriptManifest(
@@ -37,7 +37,7 @@ import org.powbot.krulvis.smither.tree.branch.ShouldBank
 	]
 )
 class Smither : KrulScript() {
-	override fun createPainter(): ATPaint<*> = SmitherPainter(this)
+	override fun createPainter(): KrulPaint<*> = SmitherPainter(this)
 	override val rootComponent: TreeComponent<*> = ShouldBank(this)
 
 	val bar by lazy { Bar.forName(getOption("Bar"))!! }

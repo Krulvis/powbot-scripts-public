@@ -2,7 +2,9 @@ package org.powbot.krulvis.giantsfoundry.tree.leaf
 
 import org.powbot.api.rt4.*
 import org.powbot.api.script.tree.Leaf
+import org.powbot.krulvis.api.ATContext.walkAndInteract
 import org.powbot.krulvis.api.extensions.Utils.waitFor
+import org.powbot.krulvis.api.extensions.Utils.waitForDistance
 import org.powbot.krulvis.giantsfoundry.GiantsFoundry
 import org.powbot.krulvis.giantsfoundry.METAL_ITEM_NAMES
 import org.powbot.krulvis.giantsfoundry.crucibleBars
@@ -12,7 +14,9 @@ class FillCrucible(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Fill Cr
 	val metalBarWidget get() = Widgets.widget(270)
 	val metalItemWidget get() = Widgets.widget(219)
 
-	fun metalBarWidgetOpen() = metalBarWidget.any { it?.text() == "What metal would you like to add?" }
+	fun metalBarWidgetOpen() =
+		metalBarWidget.firstOrNull { it?.text() == "What metal would you like to add?" }?.visible() == true
+
 	fun metalItemWidgetOpen() =
 		metalItemWidget.valid() && Components.stream().text("How many would you like to add?").viewable().isNotEmpty()
 
@@ -32,8 +36,8 @@ class FillCrucible(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Fill Cr
 		if (name.contains("bar")) {
 			if (!metalBarWidgetOpen()) {
 				script.logger.info("Clicking crucible=$crucible to fill it with bars")
-				if (crucible.interact("Fill")) {
-					waitFor(2500) { metalBarWidgetOpen() }
+				if (walkAndInteract(crucible, "Fill")) {
+					waitForDistance(crucible, extraWait = 3000) { metalBarWidgetOpen() }
 				}
 			}
 

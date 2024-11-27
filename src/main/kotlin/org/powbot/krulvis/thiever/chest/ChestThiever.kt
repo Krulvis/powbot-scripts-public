@@ -19,7 +19,7 @@ import org.powbot.krulvis.api.extensions.items.Item.Companion.BOX_TRAP
 import org.powbot.krulvis.api.extensions.items.Item.Companion.GRIMY_GUAM
 import org.powbot.krulvis.api.extensions.items.Item.Companion.MITHRIL_AXE
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.Utils
 import org.powbot.mobile.rscache.loader.ItemLoader
 import org.powbot.mobile.script.ScriptManager
@@ -45,7 +45,7 @@ class ChestThiever : KrulScript() {
     override val rootComponent: TreeComponent<*> = ShouldClearInv(this)
 
 
-    override fun createPainter(): ATPaint<*> {
+    override fun createPainter(): KrulPaint<*> {
         return ChestPainter(this)
     }
 
@@ -96,7 +96,7 @@ class ChestThiever : KrulScript() {
 }
 
 
-class ChestPainter(script: ChestThiever) : ATPaint<ChestThiever>(script) {
+class ChestPainter(script: ChestThiever) : KrulPaint<ChestThiever>(script) {
     override fun buildPaint(paintBuilder: PaintBuilder): Paint {
         return paintBuilder
             .addString("Success:") { "${script.success}, ${if (script.success == 0) 0 else (script.success * 100 / (script.success + script.fails))}%" }

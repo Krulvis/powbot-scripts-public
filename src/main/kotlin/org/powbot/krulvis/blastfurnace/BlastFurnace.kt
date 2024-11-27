@@ -7,7 +7,7 @@ import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.items.Bar
 import org.powbot.krulvis.api.extensions.items.Potion
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.Timer
 import org.powbot.krulvis.api.extensions.Utils
 import org.powbot.krulvis.blastfurnace.tree.branch.ShouldPay
@@ -58,7 +58,7 @@ class BlastFurnace : KrulScript() {
 	val potion by lazy { Potion.valueOf(getOption("Potion")) }
 	val cofferAmount by lazy { getOption<Int>("Coffer deposit") }
 	val bar by lazy { Bar.valueOf(getOption("Bar")) }
-	override fun createPainter(): ATPaint<*> = BFPainter(this)
+	override fun createPainter(): KrulPaint<*> = BFPainter(this)
 
 	override val rootComponent: TreeComponent<*> = ShouldPay(this)
 

@@ -2,12 +2,18 @@ package org.powbot.krulvis.api.script.painter
 
 import org.powbot.api.script.paint.*
 import org.powbot.krulvis.api.script.KrulScript
+import org.powbot.mobile.drawing.FrameListener
+import org.powbot.mobile.drawing.FrameManager
 import org.powbot.mobile.drawing.Rendering
 import org.powbot.mobile.rscache.loader.ItemLoader
 
-abstract class ATPaint<S : KrulScript>(val script: S, val x: Int = 110, val y: Int = 70) {
+abstract class KrulPaint<S : KrulScript>(val script: S, val x: Int = 110, val y: Int = 70) : FrameListener {
 
 	val paintBuilder = PaintBuilder()
+
+	override fun onFrame() {
+		paintCustom(Rendering)
+	}
 
 	init {
 		paintBuilder.x(x)

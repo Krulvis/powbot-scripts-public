@@ -5,8 +5,12 @@ import org.powbot.api.Point
 import org.powbot.api.rt4.Bank
 import org.powbot.api.rt4.Component
 import org.powbot.api.script.tree.Leaf
+import org.powbot.krulvis.api.ATContext.walkAndInteract
 import org.powbot.krulvis.api.extensions.Utils.waitFor
-import org.powbot.krulvis.giantsfoundry.*
+import org.powbot.krulvis.giantsfoundry.BonusType
+import org.powbot.krulvis.giantsfoundry.GiantsFoundry
+import org.powbot.krulvis.giantsfoundry.MouldType
+import org.powbot.krulvis.giantsfoundry.mouldWidget
 import kotlin.math.abs
 import kotlin.random.Random
 
@@ -26,7 +30,7 @@ class SetupMoulds(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Setup mo
 	}
 
 	private fun selectPage(mouldType: MouldType): Boolean {
-		if (MouldType.openPage() == mouldType) return true
+//		if (MouldType.openPage() == mouldType) return true
 		val button = mouldWidget().firstOrNull { it?.name()?.contains(mouldType.name) == true } ?: return false
 		return button.click()
 			&& waitFor { MouldType.openPage() == mouldType }
@@ -43,61 +47,56 @@ class SetupMoulds(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Setup mo
 					waitFor { script.jig().name.contains("Empty") }
 				}
 			}
-			val mouldType = MouldType.values().firstOrNull { !it.hasSelectedAny() }
-			if (mouldType == null) {
-				script.logger.info("All are set, closing widget!")
-				val setButton = mouldWidget().firstOrNull { it?.actions()?.contains("Set") == true }
-				if (setButton?.interact("Set") == true) {
-					if (!waitFor { script.jig().name.contains("Setup") }) {
-						val selectionContainer = mouldWidget().component(MOULD_SELECTION_CONTAINER)
-						selectionContainer.firstOrNull { it?.textColor() == MOULD_SELECTED_COLOR } ?: Component.Nil
-						val index = selectionContainer.indexOf(selectionContainer)
-						script.logger.info(
-							"Glitch with selected=[${
-								MouldType.values().map { it.selected() }
-							}], textures=[${
-								MouldType.values().map { it.selectedTexture() }
-							}] indexOfSelector=$index"
-						)
-						resetButton()?.click()
+			MouldType.values().forEach { mt ->
+				script.logger.info("Setting mouldType=${mt}, pageOpen=${mt.open()}")
+				if (!selectPage(mt)) {
+					script.logger.info("Unable to navigate to unselected mould page...")
+					return
+				}
+				val bonus = getComission()
+				script.logger.info("Setting moulds for types: [${bonus.joinToString(", ")}]")
+				if (bonus.isEmpty()) {
+					return
+				}
+
+				val bestMould = getPageMoulds().maxByOrNull { mould ->
+					mould.second.filter { it.type in bonus }.sumOf { it.amount }
+				} ?: return
+
+				val bonusStr = bestMould.second.joinToString(separator = ", ") { "${it.type}: ${it.amount}" }
+				script.logger.info("Found max mould=${bonusStr}, nameIsBlank=${bestMould.first.name().isBlank()}")
+
+				if (bestMould.first.name().isNotBlank()) {
+					val scrollBar = mouldWidget().component(11).component(1)
+					if (verticalScrollTo(bestMould.first, mouldContainer(), scrollBar)) {
+						bestMould.first.click()
+						val selected = waitFor { mt.hasSelectedAny() }
+						script.logger.info("Selected bestMould successfully=$selected")
+					} else {
+						script.logger.info("Failed to scroll to best mould...")
 					}
+				} else {
+					script.logger.info("notSelected=${mt}, bestMouldName=${bestMould.first.name()}, jigName=${script.jig().name}")
 				}
-				return
 			}
-			if (!selectPage(mouldType)) {
-				script.logger.info("Unable to navigate to unselected mould page...")
-				return
-			}
-
-			val bonus = getComission()
-			script.logger.info("Setting moulds for types: [${bonus.joinToString(", ")}]")
-			if (bonus.isEmpty()) {
-				return
-			}
-
-			val bestMould = getPageMoulds().maxByOrNull { mould ->
-				mould.second.filter { it.type in bonus }.sumOf { it.amount }
-			} ?: return
-
-			val bonusStr = bestMould.second.joinToString(separator = ", ") { "${it.type}: ${it.amount}" }
-			script.logger.info("Found max mould=${bonusStr}, nameIsBlank=${bestMould.first.name().isBlank()}")
-
-			if (bestMould.first.name().isNotBlank()) {
-				val scrollBar = mouldWidget().component(11).component(1)
-				if (verticalScrollTo(bestMould.first, mouldContainer(), scrollBar)) {
-					bestMould.first.click()
-					val selected = waitFor { mouldType.hasSelectedAny() }
-					script.logger.info("Selected bestMould successfully=$selected")
-				}
-			} else {
-				script.logger.info("notSelected=${mouldType}, bestMouldName=${bestMould.first.name()}, jigName=${script.jig().name}")
+			if (close()) {
+				waitFor { MouldType.selectedAll() && script.jig().name != "Mould jig (Empty)" }
 			}
 		} else if (Bank.close()) {
 			script.logger.info("MouldWidget is not open, interacting with jig=$jig")
-			if (jig.interact(action)) {
+			if (walkAndInteract(jig, action)) {
 				waitFor { script.mouldWidgetOpen() }
 			}
 		}
+	}
+
+
+	private fun close(): Boolean {
+		val mouldWidget = mouldWidget()
+		val closeButton = mouldWidget.firstOrNull { it?.actions()?.contains("Set") == true }
+			?: mouldWidget.firstOrNull { it?.actions()?.contains("Close") == true }
+		script.logger.info("Closebutton=$closeButton")
+		return closeButton?.click() == true
 	}
 
 	private fun getPageMoulds(): List<Pair<Component, List<Bonus>>> {
@@ -106,9 +105,24 @@ class SetupMoulds(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Setup mo
 		return buttons.map { button ->
 			val bonuses = container.filterNotNull().filter { comp ->
 				comp.index() in button.index() + 1..button.index() + 16 && BonusType.isBonus(comp)
-			}.map { Bonus(BonusType.forComp(it)!!, container.component(it.index() + 1).text().toInt()) }
-//            script.logger.info("Children for ${button.text()}: size= ${children.size}, bonuses=${children.joinToString()}")
-			Pair(button, bonuses)
+			}
+			bonuses.forEach {
+				script.logger.info(
+					"Bonus(index=${it.index()}, type=${BonusType.forComp(it)}, bonusAmount=${
+						container.component(
+							it.index() + 1
+						).text()
+					})"
+				)
+			}
+			Pair(
+				button,
+				bonuses.map {
+					Bonus(
+						BonusType.forComp(it)!!,
+						container.component(it.index() + 1).text().toIntOrNull() ?: 0
+					)
+				})
 		}
 	}
 
@@ -120,6 +134,9 @@ class SetupMoulds(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Setup mo
 
 		fun grabPoint(): Point {
 			val point = scrollBar.screenPoint()
+			if (point == Point.Nil || scrollBar.width() <= 6 || scrollBar.height() <= 6) {
+				script.logger.info("Cannot find grabPoint() point=${point}, scrollbar.width=${scrollBar.width()}, scrollbar.height=${scrollBar.height()}")
+			}
 			return Point(
 				point.x + Random.nextInt(3, scrollBar.width() - 3),
 				point.y + Random.nextInt(3, scrollBar.height() - 3)
@@ -127,6 +144,10 @@ class SetupMoulds(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Setup mo
 		}
 
 		val grabPoint = grabPoint()
+		if (grabPoint == Point.Nil) {
+			script.logger.info("Failed to scroll, grappoint = null")
+			return false
+		}
 		val scrollY = mouldButton.screenPoint().y
 		val distance = abs(scrollY - topY)
 		val minY = grabPoint.y - distance

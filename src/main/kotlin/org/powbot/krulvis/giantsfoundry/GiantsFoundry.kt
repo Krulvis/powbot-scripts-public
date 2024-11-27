@@ -1,15 +1,13 @@
 package org.powbot.krulvis.giantsfoundry
 
 import org.powbot.api.Tile
-import org.powbot.api.event.TickEvent
 import org.powbot.api.rt4.*
 import org.powbot.api.script.*
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.me
-import org.powbot.krulvis.api.extensions.Utils
 import org.powbot.krulvis.api.extensions.items.*
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.giantsfoundry.tree.branch.IsSmithing
 
 
@@ -17,7 +15,7 @@ import org.powbot.krulvis.giantsfoundry.tree.branch.IsSmithing
 	name = "krul GiantFoundry",
 	description = "Makes swords for big giant.",
 	author = "Krulvis",
-	version = "1.0.7",
+	version = "1.0.8",
 	scriptId = "6e058edd-cc5b-4b20-b4aa-6def55e9e903",
 	category = ScriptCategory.Smithing,
 )
@@ -48,13 +46,18 @@ import org.powbot.krulvis.giantsfoundry.tree.branch.IsSmithing
 	]
 )
 class GiantsFoundry : KrulScript() {
-	override fun createPainter(): ATPaint<*> {
+	override fun createPainter(): KrulPaint<*> {
 		return GiantsFoundryPainter(this)
 	}
 
 	var coins = 0
 	var qualities = 0
-	var currentAction: Action? = null
+	val currentStage: Stage
+		get() {
+			val progress = currentProgress()
+			return stages.lastOrNull { it.isActive(progress) } ?: Stage.Nil
+		}
+	var stages = emptyArray<Stage>()
 
 	val singleMetal by lazy { getOption<Boolean>("SingleMetal") }
 	val useItems by lazy { getOption<Boolean>("UseMetalItems") }
@@ -85,33 +88,11 @@ class GiantsFoundry : KrulScript() {
 
 	fun areBarsPoured() = jig().name.contains("(Poured metal)")
 
-	fun activeActionComp(): Component = Widgets.component(ROOT, 76)
-
 	fun kovac() = Npcs.stream().name("Kovac").firstOrNull()
 
 	fun hasCommission() = Varpbits.varpbit(JOB_VARP, 0, 63) != 0
 
 	fun mouldWidgetOpen() = mouldWidget().component(2).any { it?.text() == "Giants' Foundry Mould Setup" }
-
-	fun activeAction(): Action? {
-		val activeComp = activeActionComp()
-		val x = activeComp.x()
-		val maxX = x + activeComp.width()
-		val actionComps = Components.stream(ROOT, 75)
-			.filtered { it.x() in x..maxX }.list()
-		val actionComp = actionComps.firstOrNull { Action.forTexture(it.textureId()) != null } ?: return null
-		return Action.forTexture(actionComp.textureId())
-	}
-
-	fun interactObj(obj: GameObject, action: String): Boolean {
-		if (obj.distance() > 3) Movement.step(obj.tile)
-		return Utils.waitFor { obj.inViewport() } && obj.interact(action)
-	}
-
-	@com.google.common.eventbus.Subscribe
-	fun onTickEvent(_e: TickEvent) {
-		currentAction = activeAction()
-	}
 
 	fun stopActivity(tile: Tile?) = Movement.step(tile ?: me.tile())
 

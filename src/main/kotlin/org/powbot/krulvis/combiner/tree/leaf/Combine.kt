@@ -115,7 +115,7 @@ class Combine(script: Combiner) : Leaf<Combiner>(script, "Start combining") {
 								}
 
 								else -> {
-									sleep(600)
+									if (!script.spamClick) sleep(600)
 									true
 								}
 							}

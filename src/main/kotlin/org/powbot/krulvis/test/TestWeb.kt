@@ -9,14 +9,14 @@ import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.tree.SimpleLeaf
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.mobile.drawing.Rendering
 import org.powbot.util.TransientGetter2D
 
 @ScriptManifest(name = "test Web", version = "1.0.1", description = "", priv = true)
 class TestWeb : KrulScript() {
-	override fun createPainter(): ATPaint<*> = TestWebPainter(this)
+	override fun createPainter(): KrulPaint<*> = TestWebPainter(this)
 
 	var destination = Tile(2339, 3109, 0)
 
@@ -37,7 +37,7 @@ class TestWeb : KrulScript() {
 }
 
 
-class TestWebPainter(script: TestWeb) : ATPaint<TestWeb>(script) {
+class TestWebPainter(script: TestWeb) : KrulPaint<TestWeb>(script) {
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder
 			.build()

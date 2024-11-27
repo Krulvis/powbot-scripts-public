@@ -9,7 +9,7 @@ import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.spices.tree.branches.Killing
 
 @ScriptManifest(
@@ -34,7 +34,7 @@ import org.powbot.krulvis.spices.tree.branches.Killing
 class Spices : KrulScript() {
 
 	val spice by lazy { Spice.valueOf(getOption("spice")) }
-	override fun createPainter(): ATPaint<*> {
+	override fun createPainter(): KrulPaint<*> {
 		return SpicesPainter(this)
 	}
 
@@ -51,7 +51,7 @@ class Spices : KrulScript() {
 }
 
 
-class SpicesPainter(script: Spices) : ATPaint<Spices>(script) {
+class SpicesPainter(script: Spices) : KrulPaint<Spices>(script) {
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder.addString("Cat HP") {
 			script.cat()?.healthPercent()?.toString() ?: "-1"

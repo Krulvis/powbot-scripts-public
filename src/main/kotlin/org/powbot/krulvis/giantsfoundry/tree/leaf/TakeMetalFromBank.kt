@@ -6,7 +6,9 @@ import org.powbot.api.rt4.Inventory
 import org.powbot.api.rt4.Objects
 import org.powbot.api.script.tree.Leaf
 import org.powbot.krulvis.api.ATContext.getCount
+import org.powbot.krulvis.api.ATContext.walkAndInteract
 import org.powbot.krulvis.api.extensions.Utils.waitFor
+import org.powbot.krulvis.api.extensions.Utils.waitForDistance
 import org.powbot.krulvis.giantsfoundry.*
 
 class TakeMetalFromBank(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Take metal from bank") {
@@ -29,7 +31,7 @@ class TakeMetalFromBank(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Ta
 			barsToGet = barsToGet.map { it.first to it.second - crucibleBars[it.first]!! - invBarsMap[it.first]!! }
 
 			script.logger.info("Still need to get=[${barsToGet.joinToString { "${it.first}:${it.second}" }}]")
-			barsToGet.forEach { (bar, amount) ->
+			barsToGet.filter { it.second > 0 }.forEach { (bar, amount) ->
 
 				val potentialItems = METAL_ITEMS
 					.filter { amount / it.value > 0 }
@@ -38,12 +40,15 @@ class TakeMetalFromBank(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Ta
 
 				script.logger.info("Potential items for ${bar.name}=[${potentialItems.keys.joinToString()}]")
 				val names = potentialItems.map { it.key }.toTypedArray()
-				val item =
-					Bank.stream().nameContains(*names).nameContains(bar.itemName, bar.craftedBarItemPrefix())
-						.filtered { it.stack > 0 }.maxByOrNull { getCrucibleValueForItem(it) }
-						?: return
+				val bankItems =
+					Bank.stream().nameContains(*names).nameContains(bar.craftedBarItemPrefix(), bar.itemName)
+						.filtered { it.stack > 0 }
+						.sortedBy { item -> METAL_ITEM_NAMES.indexOfFirst { it in item.name() } }
+				script.logger.info("bankitems=[${bankItems.joinToString { it.name() }}]")
+				val item = bankItems.maxByOrNull { getCrucibleBarsForItem(it) }
+					?: return
 
-				val crucibleValue = getCrucibleValueForItem(item)
+				val crucibleValue = getCrucibleBarsForItem(item)
 				script.logger.info("Withdrawing ${item.name()}, crucibleValue=${crucibleValue}")
 				val currentItemCount = Inventory.getCount(item.id)
 				if (Bank.withdraw(item.id, amount / crucibleValue)) {
@@ -59,7 +64,7 @@ class TakeMetalFromBank(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Ta
 			return true
 		}
 		val bankObj =
-			Objects.stream(30).type(GameObject.Type.INTERACTIVE).name("Bank chest").firstOrNull() ?: return false
-		return script.interactObj(bankObj, "Use") && waitFor { Bank.opened() }
+			Objects.stream(30, GameObject.Type.INTERACTIVE).name("Bank chest").firstOrNull() ?: return false
+		return walkAndInteract(bankObj, "Use") && waitForDistance(bankObj, extraWait = 2400) { Bank.opened() }
 	}
 }

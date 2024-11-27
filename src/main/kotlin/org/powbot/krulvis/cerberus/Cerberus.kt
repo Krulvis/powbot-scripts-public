@@ -14,7 +14,7 @@ import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
 import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.CASTLE_WARS_JEWELLERY_BOX
 import org.powbot.krulvis.api.script.KillerScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.cerberus.Data.FLINCH_OPTION
 import org.powbot.krulvis.cerberus.tree.branch.AtCerb
 import org.powbot.krulvis.fighter.BANK_TELEPORT_OPTION
@@ -49,7 +49,7 @@ class Cerberus : KillerScript(true) {
 		TODO("Not yet implemented")
 	}
 
-	override fun createPainter(): ATPaint<*> = CerbPainter(this)
+	override fun createPainter(): KrulPaint<*> = CerbPainter(this)
 
 	override val rootComponent: TreeComponent<*> = AtCerb(this)
 

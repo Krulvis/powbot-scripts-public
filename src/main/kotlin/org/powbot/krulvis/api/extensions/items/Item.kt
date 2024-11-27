@@ -112,7 +112,7 @@ interface Item {
 		const val BRONZE_AXE = 1351
 		const val MITHRIL_AXE = 1355
 		const val EMPTY_BUCKET = 1925
-		const val FISHING_NET = 303
+		const val SMALL_FISHING_NET = 303
 		const val COOKED_SHRIMP = 315
 		const val EMPTY_POT = 1931
 		const val BREAD = 2309

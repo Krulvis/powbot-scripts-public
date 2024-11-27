@@ -12,7 +12,7 @@ import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
 import org.powbot.krulvis.api.extensions.teleports.Teleport
 import org.powbot.krulvis.api.extensions.teleports.TeleportMethod
 import org.powbot.krulvis.api.script.KillerScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.fighter.BANK_TELEPORT_OPTION
 import org.powbot.krulvis.fighter.EQUIPMENT_OPTION
 import org.powbot.krulvis.fighter.INVENTORY_OPTION
@@ -49,7 +49,7 @@ class Vorkath : KillerScript(true) {
 		return Data.lootNames.any { it in name }
 	}
 
-	override fun createPainter(): ATPaint<*> = VorkathPainter(this)
+	override fun createPainter(): KrulPaint<*> = VorkathPainter(this)
 
 	override val rootComponent: TreeComponent<*> = Fighting(this)
 }

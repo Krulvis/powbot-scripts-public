@@ -1,8 +1,11 @@
 package org.powbot.krulvis.api.extensions
 
+import org.powbot.api.Random
 import org.powbot.api.rt4.Inventory
 import org.powbot.api.rt4.Magic
 import org.powbot.api.rt4.Prayer
+import org.powbot.api.rt4.Skills
+import org.powbot.api.rt4.walking.model.Skill
 import org.powbot.krulvis.api.extensions.items.Item.Companion.BOOK_OF_THE_DEAD
 
 const val GREATER_GHOST = "GREATER_GHOST"
@@ -22,5 +25,14 @@ enum class ResurrectSpell(val spell: Magic.ArceuusSpell, val prayerRequirement: 
 	;
 
 	fun hasBook(): Boolean = Inventory.stream().id(BOOK_OF_THE_DEAD).isNotEmpty()
-	fun canCast(): Boolean = hasBook() && Prayer.prayerPoints() >= prayerRequirement && spell.canCast()
+	fun canCast(): Boolean =
+		hasBook() && Prayer.prayerPoints() >= prayerRequirement && canResurrect() && spell.canCast()
+
+	companion object {
+
+		val resurrectTimer = Timer(1)
+		fun canResurrect() = resurrectTimer.isFinished()
+		fun resetTimer() = resurrectTimer.reset(0.6 * Skills.level(Skill.Magic) * 1000 + Random.nextInt(1000, 10000))
+
+	}
 }

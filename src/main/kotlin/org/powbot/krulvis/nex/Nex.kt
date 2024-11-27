@@ -11,7 +11,7 @@ import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
 import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
 import org.powbot.krulvis.api.script.KillerScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.demonicgorilla.lootNames
 import org.powbot.krulvis.fighter.EQUIPMENT_OPTION
 import org.powbot.krulvis.fighter.INVENTORY_OPTION
@@ -40,7 +40,7 @@ class Nex : KillerScript(true) {
 		return lootNames.any { name in it.lowercase() }
 	}
 
-	override fun createPainter(): ATPaint<*> = NexPainter(this)
+	override fun createPainter(): KrulPaint<*> = NexPainter(this)
 
 	override val rootComponent: TreeComponent<*> = InArena(this)
 }

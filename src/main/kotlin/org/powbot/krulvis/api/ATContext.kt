@@ -13,7 +13,9 @@ import org.powbot.krulvis.api.antiban.DelayHandler
 import org.powbot.krulvis.api.antiban.OddsModifier
 import org.powbot.krulvis.api.extensions.Utils.mid
 import org.powbot.krulvis.api.extensions.Utils.short
+import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.krulvis.api.extensions.Utils.waitFor
+import org.powbot.krulvis.api.extensions.Utils.waitForDistanceWhile
 import org.powbot.krulvis.api.extensions.Utils.waitForWhile
 import org.powbot.mobile.rscache.loader.ItemLoader
 import org.slf4j.LoggerFactory
@@ -24,6 +26,8 @@ object ATContext {
 	val logger = LoggerFactory.getLogger(ATContext.javaClass.simpleName)
 
 	val me: Player get() = Players.local()
+
+	const val RUN_THRESHOLD_VARP = 3190
 
 	var nextRun = Random.nextInt(2, 5)
 
@@ -39,59 +43,74 @@ object ATContext {
 
 	fun fullPrayer() = Skills.realLevel(Skill.Prayer) == Skills.level(Skill.Prayer)
 
+	fun Prayer.disablePrayers() {
+		val activePrayers = activePrayers()
+		activePrayers.forEach {
+			prayer(it, false)
+			sleep(20)
+		}
+	}
+
 
 	fun Actor<*>.gargoyle() = name().contains("Gargoyle", true)
 
-	val GARGOYLE_DESTROY_ANIM = 1520
+	const val GARGOYLE_DESTROY_ANIM = 1520
 	fun Actor<*>.dead() =
 		!valid() || (healthBarVisible() && if (gargoyle()) animation() == GARGOYLE_DESTROY_ANIM else healthPercent() == 0)
 
 	fun Actor<*>.alive() = valid() && (!healthBarVisible() || healthPercent() > 0)
 
+	fun runThreshold() = Varpbits.varpbit(RUN_THRESHOLD_VARP, 17, 127)
 
 	fun turnRunOn(): Boolean {
-		if (Movement.running()) {
+		if (Movement.running() || runThreshold() > 0) {
 			return true
 		}
 		if (Movement.energyLevel() >= Random.nextInt(1, 5)) {
-			debug("Turning run on")
-			return Widgets.widget(Constants.MOVEMENT_MAP).component(Constants.MOVEMENT_RUN_ENERGY - 1).click()
+			return Movement.running(true)
 		}
 		return false
 	}
 
 	fun List<Tile>.atLastTile(distance: Int = 2) = last().distanceTo(Movement.destination()) <= distance
 
-	fun List<Tile>.traverse(offset: Int = 2, distanceToLastTile: Int = 2, whileWaiting: () -> Any = {}): Boolean {
+	fun List<Tile>.traverse(offset: Int = 1, distanceToLastTile: Int = 2, whileWaiting: () -> Any = {}): Boolean {
 		debug("List<Tile>.traverse(offset=$offset, distanceToLastTile=$distanceToLastTile, whileWaiting=$whileWaiting)")
 		if (atLastTile(offset) && Components.stream(219).id(1).viewable().isEmpty()) {
 			debug("Already at last tile...")
 			return true
 		}
-		val walkableTile = lastOrNull { it.onMap() }
-		if (walkableTile == null) {
+		val next = lastOrNull { it.onMap() }
+		if (next == null) {
 			debug("Can't find walkableTile? none are on minimap")
 			return false
 		}
-		val tileToClick = walkableTile.derive(
-			kotlin.random.Random.nextInt(-offset, offset),
-			kotlin.random.Random.nextInt(-offset, offset)
-		)
-		if (Movement.step(tileToClick, minDistance = 0)) {
-			debug("Successfully stepped to tileToClick=${tileToClick}")
-			return waitForWhile(mid(), { lastOrNull { it.onMap() } != walkableTile }) { whileWaiting() }
+		var destination = Movement.destination()
+
+		if (destination.distanceTo(next) <= distanceToLastTile || Movement.step(next, minDistance = offset)) {
+			debug("Successfully stepped to tileToClick=${next}")
+			return waitForWhile(mid(), { lastOrNull { it.onMap() } != next }) { whileWaiting() }
 		} else {
-			debug("Failed Movement.step(${tileToClick}, minDistance=0)")
+			debug("Failed Movement.step(${next}, minDistance=0)")
 		}
-//        val atLastTile = atLastTile(distanceToLastTile)
-		val destination = Movement.destination()
+
 		val last = last()
+		destination = Movement.destination()
 		val distanceToLast = last.distanceTo(destination)
 		debug("Standing on ${destination}, lastTile=${last}, distance=${distanceToLast}, closeEnough=${distanceToLast <= distanceToLastTile}")
 		return false
 	}
 
 	fun Movement.moving(): Boolean = destination() != Tile.Nil
+
+	fun Locatable.distanceToDest(): Double {
+		val destination = Movement.destination()
+		return if (destination.valid()) {
+			distanceTo(destination)
+		} else {
+			distance()
+		}
+	}
 
 	fun Movement.stepNoConfirm(tile: Tile): Boolean {
 		val matrix = tile.matrix()
@@ -160,9 +179,10 @@ object ATContext {
 
 		turnRunOn()
 		var point = t.nextPoint()
-		val inViewport = point.inViewport()
+		var inViewport = point.inViewport()
 		debug("Interacting with: $name pos=$pos, point=$point, inViewport=$inViewport")
 		if (!inViewport || distanceToPos > 12) {
+			val startWait = System.currentTimeMillis()
 			debug("Not in viewport, walking before interacting distance=${distanceToPos}, allowWalk=$allowWalk")
 			if (!allowWalk) {
 				return false
@@ -171,11 +191,17 @@ object ATContext {
 			if (!waitForWhile(1000, { Movement.destination().distanceTo(pos) <= 5 })) {
 				return false
 			}
-			waitForWhile(mid(), {
+			inViewport = waitForDistanceWhile(pos, extraWait = mid(), whileWaiting = whileWaiting, condition = {
 				point = t.nextPoint()
 				!t.valid() || point.inViewport()
-			}, whileWaiting)
+			})
+
+			if (!inViewport) {
+				debug("After waiting for ${System.currentTimeMillis() - startWait} ms, point=$point still not in viewport")
+				return false
+			}
 		}
+
 
 		val selectedId = Inventory.selectedItem().id()
 		if (selectedId != selectItem) {
@@ -199,12 +225,13 @@ object ATContext {
 		val singleTap = Game.singleTapEnabled()
 		Game.setSingleTapToggle(true)
 		val waiter = ActionWaiter(action, name)
+		val nullWaiter = ActionWaiter("Walk here", "")
 		waiter.reset()
 
 		try {
 			if (Menu.opened() && handleMenu(action, name)) {
 				Game.setSingleTapToggle(singleTap)
-				if (waitFor(100) { waiter.finished() }) {
+				if (waitFor(500) { waiter.finished() }) {
 					waiter.unregister()
 					return true
 				}
@@ -212,11 +239,12 @@ object ATContext {
 			debug("interacting on point=$this, action=$action, name=$name")
 			if (Game.openTabBounds().contains(this) && !Game.closeOpenTab()) {
 				debug("couldn't close obstructing tab, returning false")
-			} else if (Input.tap(this) && waitFor(250) { Menu.opened() }) {
-				if (handleMenu(action, name)) {
-					Game.setSingleTapToggle(singleTap)
-					if (waitFor(200) { waiter.finished() }) {
+			} else if (Input.tap(this) && waitFor(500) { Menu.opened() || nullWaiter.finished() || waiter.finished() }) {
+				if (Menu.opened() && handleMenu(action, name)) {
+					if (waitFor(500) { waiter.finished() }) {
 						debug("Successful interaction waiter is finished=${waiter.finished()}")
+						Game.setSingleTapToggle(singleTap)
+						nullWaiter.unregister()
 						waiter.unregister()
 						return true
 					}
@@ -229,6 +257,7 @@ object ATContext {
 			logger.error(e.stackTraceToString())
 		}
 		Game.setSingleTapToggle(singleTap)
+		nullWaiter.unregister()
 		waiter.unregister()
 		return false
 	}

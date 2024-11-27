@@ -27,7 +27,7 @@ import org.powbot.krulvis.api.extensions.teleports.poh.openable.FEROX_ENCLAVE_JE
 import org.powbot.krulvis.api.extensions.watcher.LootWatcher
 import org.powbot.krulvis.api.extensions.watcher.NpcDeathWatcher
 import org.powbot.krulvis.api.script.KillerScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.demonicgorilla.Data.DEMONIC_GORILLA_DEATH_ANIM
 import org.powbot.krulvis.demonicgorilla.Data.DEMONIC_GORILLA_MAGE_ANIM
 import org.powbot.krulvis.demonicgorilla.Data.DEMONIC_GORILLA_MELEE_ANIM
@@ -131,7 +131,7 @@ import org.powbot.mobile.script.ScriptManager
 //</editor-fold>
 class DemonicGorilla : KillerScript() {
 
-	override fun createPainter(): ATPaint<*> = DGPainter(this)
+	override fun createPainter(): KrulPaint<*> = DGPainter(this)
 
 	override val rootComponent: TreeComponent<*> = ShouldStop(this)
 

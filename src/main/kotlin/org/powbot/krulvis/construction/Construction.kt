@@ -8,7 +8,7 @@ import org.powbot.api.script.ScriptManifest
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.items.Plank
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.construction.tree.branch.InHouse
 
 //TODO("This script is unfinished. Only started")
@@ -22,7 +22,7 @@ import org.powbot.krulvis.construction.tree.branch.InHouse
 	priv = true
 )
 class Construction : KrulScript() {
-	override fun createPainter(): ATPaint<*> = ConstructionPainter(this)
+	override fun createPainter(): KrulPaint<*> = ConstructionPainter(this)
 
 	var lastLeafCompleted = System.currentTimeMillis()
 

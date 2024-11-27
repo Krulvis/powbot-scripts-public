@@ -28,7 +28,7 @@ import org.powbot.krulvis.api.extensions.teleports.poh.LUNAR_ISLE_HOUSE_PORTAL
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.*
 import org.powbot.krulvis.api.script.KillerScript
 import org.powbot.krulvis.api.script.UniqueLootTracker
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.script.tree.branch.RunePouchScript
 import org.powbot.krulvis.api.script.tree.branch.ShouldConsume
 import org.powbot.krulvis.api.script.tree.branch.ShouldSipPotion
@@ -169,7 +169,7 @@ import kotlin.random.Random
 //</editor-fold>
 class Fighter : KillerScript(), UniqueLootTracker, RunePouchScript {
 
-	override fun createPainter(): ATPaint<*> = FighterPainter(this)
+	override fun createPainter(): KrulPaint<*> = FighterPainter(this)
 
 	val useTeleportsToBank by lazy { getOption<String>(BANK_TELEPORT_OPTION) != DISABLE_TELEPORTS_OPTION }
 	val useTeleportsToMonsters by lazy { getOption<String>(MONSTER_TELEPORT_OPTION) != DISABLE_TELEPORTS_OPTION }

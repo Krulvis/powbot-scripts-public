@@ -11,7 +11,7 @@ import org.powbot.api.script.tree.SimpleLeaf
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.me
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.mobile.drawing.Rendering
 
@@ -22,7 +22,7 @@ import org.powbot.mobile.drawing.Rendering
 	priv = true
 )
 class PathBuilder : KrulScript() {
-	override fun createPainter(): ATPaint<*> = PathBuilderPainter(this)
+	override fun createPainter(): KrulPaint<*> = PathBuilderPainter(this)
 
 	val path: MutableList<Tile> = mutableListOf()
 
@@ -44,7 +44,7 @@ class PathBuilder : KrulScript() {
 }
 
 
-class PathBuilderPainter(script: PathBuilder) : ATPaint<PathBuilder>(script) {
+class PathBuilderPainter(script: PathBuilder) : KrulPaint<PathBuilder>(script) {
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder
 			.build()

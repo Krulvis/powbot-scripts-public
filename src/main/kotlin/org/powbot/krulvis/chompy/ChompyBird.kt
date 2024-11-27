@@ -9,12 +9,12 @@ import org.powbot.api.script.ScriptCategory
 import org.powbot.api.script.ScriptManifest
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.chompy.tree.branch.HasEquipment
 
 @ScriptManifest(name = "krul ChompyBird", description = "Kills chompy birds, doesn't Pluck", version = "1.0.0", scriptId = "b40b416a-e9b3-42b8-b724-91cdf684d2bd", category = ScriptCategory.Minigame)
 class ChompyBird : KrulScript() {
-	override fun createPainter(): ATPaint<*> = ChompyBirdPainter(this)
+	override fun createPainter(): KrulPaint<*> = ChompyBirdPainter(this)
 
 	var placingToads: Boolean = false
 	var placementTile = Tile.Nil

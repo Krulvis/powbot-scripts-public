@@ -3,7 +3,7 @@ package org.powbot.krulvis.tanner
 import org.powbot.api.script.*
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.tanner.Data.BLACK_D_HIDE
 import org.powbot.krulvis.tanner.Data.BLUE_D_HIDE
 import org.powbot.krulvis.tanner.Data.COWHIDE_OPTION
@@ -52,7 +52,7 @@ class Tanner : KrulScript() {
 		hide = getHideForOption(getOption(if (all) COWHIDE_OPTION else HIDE_OPTION)) ?: return
 	}
 
-	override fun createPainter(): ATPaint<*> = TannerPainter(this)
+	override fun createPainter(): KrulPaint<*> = TannerPainter(this)
 
 	override val rootComponent: TreeComponent<*> = HasSupplies(this)
 }

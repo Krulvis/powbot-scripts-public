@@ -12,7 +12,7 @@ import org.powbot.krulvis.api.extensions.items.Item.Companion.VIAL
 import org.powbot.krulvis.api.extensions.items.Potion
 import org.powbot.krulvis.api.extensions.watcher.LootWatcher
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.teleports.Teleport
 import org.powbot.krulvis.api.extensions.teleports.TeleportMethod
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.EDGEVILLE_MOUNTED_GLORY
@@ -33,7 +33,7 @@ import kotlin.math.max
 		allowedValues = ["NONE", FALADOR_TELEPORT_NEXUS], defaultValue = FALADOR_TELEPORT_NEXUS),
 ])
 class GiantMole : KrulScript() {
-	override fun createPainter(): ATPaint<*> = GMPainter(this)
+	override fun createPainter(): KrulPaint<*> = GMPainter(this)
 	val rapidHealTimer = Timer(30000)
 
 	val inventory by lazy { getOption<Map<Int, Int>>("Inventory") }

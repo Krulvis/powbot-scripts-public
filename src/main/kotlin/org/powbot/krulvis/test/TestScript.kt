@@ -16,7 +16,8 @@ import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.tree.SimpleLeaf
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
+import org.powbot.krulvis.mixology.Data.mixingPotion
 import org.powbot.mobile.drawing.Rendering
 
 @ScriptManifest(name = "Krul TestScriptu", version = "1.0.1", description = "", priv = true)
@@ -64,7 +65,7 @@ import org.powbot.mobile.drawing.Rendering
 	]
 )
 class TestScript : KrulScript() {
-	override fun createPainter(): ATPaint<*> = TestPainter(this)
+	override fun createPainter(): KrulPaint<*> = TestPainter(this)
 
 	var mixers: List<GameObject> = emptyList()
 
@@ -74,6 +75,8 @@ class TestScript : KrulScript() {
 	var PROC_MASTERING_MIXOLOGY_BUILD_REAGENTS: Int = 7064
 	var rift = GameObject.Nil
 	override val rootComponent: TreeComponent<*> = SimpleLeaf(this, "TestLeaf") {
+		val spider = Objects.stream(15, GameObject.Type.INTERACTIVE).name("Polishing wheel").first()
+		logger.info(spider.toString())
 	}
 
 	@Subscribe
@@ -104,7 +107,7 @@ class TestScript : KrulScript() {
 
 }
 
-class TestPainter(script: TestScript) : ATPaint<TestScript>(script) {
+class TestPainter(script: TestScript) : KrulPaint<TestScript>(script) {
 
 	fun combatWidget(): Widget? {
 		return Widgets.stream().firstOrNull { it.components().any { c -> c.text() == "Bloodveld" } }
@@ -112,6 +115,7 @@ class TestPainter(script: TestScript) : ATPaint<TestScript>(script) {
 
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder
+			.addString("MixingPotion") { mixingPotion().toString() }
 			.addString("BUILD_REAGENTS") { Varpbits.value(script.PROC_MASTERING_MIXOLOGY_BUILD_REAGENTS).toString() }
 			.addString("VARP_LYE_RESIN") { Varpbits.value(script.VARP_LYE_RESIN).toString() }
 			.addString("VARP_AGA_RESIN") { Varpbits.value(script.VARP_AGA_RESIN).toString() }

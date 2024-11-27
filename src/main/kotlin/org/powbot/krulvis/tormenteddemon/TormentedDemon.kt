@@ -25,7 +25,7 @@ import org.powbot.krulvis.api.extensions.watcher.LootWatcher
 import org.powbot.krulvis.api.extensions.watcher.NpcDeathWatcher
 import org.powbot.krulvis.api.script.KillerScript
 import org.powbot.krulvis.api.script.UniqueLootTracker
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.fighter.BANK_TELEPORT_OPTION
 import org.powbot.krulvis.fighter.BURY_BONES_OPTION
 import org.powbot.krulvis.fighter.INVENTORY_OPTION
@@ -135,7 +135,7 @@ import org.powbot.mobile.script.ScriptManager
 //</editor-fold>
 class TormentedDemon : KillerScript(), UniqueLootTracker {
 
-	override fun createPainter(): ATPaint<*> = DGPainter(this)
+	override fun createPainter(): KrulPaint<*> = DGPainter(this)
 
 	override val rootComponent: TreeComponent<*> = ShouldStop(this)
 	override fun getGroundLoot(): List<GroundItem> = ironmanLoot
@@ -270,7 +270,7 @@ class TormentedDemon : KillerScript(), UniqueLootTracker {
 
 	//Resurrection options
 	val resurrectSpell by lazy { ResurrectSpell.values().firstOrNull { it.name == getOption(RESURRECT_OPTION) } }
-	var resurrectedTimer = Timer(0.6 * 99)
+	var resurrectedTimer = Timer(0.6 * 99 * 1000)
 
 	//Custom slayer options
 	var lastTask = false

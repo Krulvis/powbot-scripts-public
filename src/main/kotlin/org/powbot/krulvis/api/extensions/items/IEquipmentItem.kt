@@ -8,7 +8,6 @@ import org.powbot.krulvis.api.ATContext.stripNumbersAndCharges
 import org.powbot.krulvis.api.extensions.Utils.waitFor
 import org.powbot.mobile.rscache.loader.ItemLoader
 import org.powbot.mobile.script.ScriptManager
-import org.powbot.mobile.script.daemon.SingleTap
 import org.slf4j.LoggerFactory
 
 private val logger = LoggerFactory.getLogger("EquipmentItem")
@@ -53,13 +52,21 @@ interface IEquipmentItem : Item {
 		return inEquipment()
 	}
 
+	fun org.powbot.api.rt4.Item.equipAction(): String? {
+		val actions = actions()
+		return actions.firstOrNull { it in listOf("Wear", "Wield", "Equip") }
+	}
+
 	fun equip(wait: Boolean = true): Boolean {
 		if (inEquipment()) return true
 		if (inInventory() && (Bank.opened() || Game.tab(Game.Tab.INVENTORY))) {
 			val item = Inventory.stream().nameContains(itemName).first()
-			val actions = item.actions()
-			val action = actions.firstOrNull { it in listOf("Wear", "Wield", "Equip") }
-			ScriptManager.script()!!.logger.info("Equipping $itemName action=$action, actions=[${actions.joinToString()}]")
+			val action = item.equipAction()
+			ScriptManager.script()!!.logger.info(
+				"Equipping $itemName action=$action, actions=[${
+					item.actions().joinToString()
+				}]"
+			)
 			if (if (action == null || !wait) item.click() else item.interact(action)) {
 				if (wait) waitFor(2000) { inEquipment() } else return true
 			}

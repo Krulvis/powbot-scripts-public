@@ -25,7 +25,7 @@ import org.powbot.krulvis.api.extensions.teleports.poh.openable.FAIRY_RING_BLS
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.FAIRY_RING_DJR
 import org.powbot.krulvis.api.script.KillerScript
 import org.powbot.krulvis.api.script.UniqueLootTracker
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.lizardshamans.Data.LOOT
 import org.powbot.krulvis.lizardshamans.event.JumpEvent
 import org.powbot.krulvis.lizardshamans.tree.branch.ShouldBank
@@ -54,7 +54,7 @@ import org.powbot.krulvis.lizardshamans.tree.branch.ShouldBank
 	]
 )
 class LizardShamans : KillerScript(false), UniqueLootTracker {
-	override fun createPainter(): ATPaint<*> = LizardShamanPainter(this)
+	override fun createPainter(): KrulPaint<*> = LizardShamanPainter(this)
 
 	var banking = false
 	val lootList = mutableListOf<GroundItem>()

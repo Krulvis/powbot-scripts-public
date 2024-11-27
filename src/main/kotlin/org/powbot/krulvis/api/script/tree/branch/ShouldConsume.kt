@@ -35,15 +35,13 @@ class ShouldConsume<S : KrulScript>(
 		val pot = potion
 		if (food != null) {
 			if (!food.eat()) return@SimpleLeaf
-			val prayPoints = Prayer.prayerPoints()
 			val ateKaram = comboEatKarambwan(food)
 			consumeTick = script.ticks
 			nextEatExtra = Random.nextInt(1, 8)
 			if (canSipPray && !ateKaram && prayPot!!.drink()) {
 				script.logger.info("Tick-sipping prayer potion")
 				consumeTick = script.ticks
-				if (Condition.wait({ Prayer.prayerPoints() > prayPoints }, 250, 15))
-					return@SimpleLeaf
+				return@SimpleLeaf
 			}
 		}
 

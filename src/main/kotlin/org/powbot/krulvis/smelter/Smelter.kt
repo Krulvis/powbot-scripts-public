@@ -7,7 +7,7 @@ import org.powbot.api.script.ScriptManifest
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.items.Bar
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.smelter.tree.branch.ShouldBank
 
 @ScriptManifest(
@@ -42,7 +42,7 @@ import org.powbot.krulvis.smelter.tree.branch.ShouldBank
 	]
 )
 class Smelter : KrulScript() {
-	override fun createPainter(): ATPaint<*> = SmelterPainter(this)
+	override fun createPainter(): KrulPaint<*> = SmelterPainter(this)
 	override val rootComponent: TreeComponent<*> = ShouldBank(this)
 
 	val bar by lazy { Bar.valueOf(getOption<String>("Bar")) }

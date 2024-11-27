@@ -8,15 +8,17 @@ import org.powbot.api.script.ScriptManifest
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.items.Food
 import org.powbot.krulvis.api.extensions.items.Potion
-import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
+import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement.Companion.ids
+import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
+import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement.Companion.ids
 import org.powbot.krulvis.api.extensions.teleports.EDGEVILLE_GLORY
 import org.powbot.krulvis.api.extensions.teleports.FALADOR_TELEPORT
 import org.powbot.krulvis.api.extensions.teleports.Teleport
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.EDGEVILLE_MOUNTED_GLORY
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.FALADOR_TELEPORT_NEXUS
-import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
-import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement.Companion.ids
+import org.powbot.krulvis.api.script.KrulScript
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.orbcharger.tree.branch.ShouldBank
 
 @ScriptManifest(
@@ -50,6 +52,7 @@ import org.powbot.krulvis.orbcharger.tree.branch.ShouldBank
 			defaultValue = "true"
 		),
 		ScriptConfiguration("Equipment", "What to wear?", OptionType.EQUIPMENT),
+		ScriptConfiguration("Inventory", "What to bring?", OptionType.INVENTORY),
 		ScriptConfiguration(
 			name = "BankTeleport",
 			description = "How to get to bank?",
@@ -74,8 +77,9 @@ class OrbCrafter : KrulScript() {
 	val antipoison by lazy { getOption<Boolean>("Antipoison") }
 	val food by lazy { Food.valueOf(getOption("Food")) }
 	val equipment by lazy { EquipmentRequirement.forOption(getOption("Equipment")) }
+	val inventory by lazy { InventoryRequirement.forOption(getOption("Inventory")) }
 
-	override fun createPainter(): ATPaint<*> = OrbPainter(this)
+	override fun createPainter(): KrulPaint<*> = OrbPainter(this)
 
 	override val rootComponent: TreeComponent<*> = ShouldBank(this)
 
@@ -91,7 +95,7 @@ class OrbCrafter : KrulScript() {
 			Rune.AIR.id,
 			*Potion.ANTIPOISON.ids,
 			*Potion.SUPER_ANTIPOISON.ids,
-			*orb.requirements.flatMap { it.item.ids.toList() }.toIntArray(),
+			*inventory.ids(),
 			*equipment.ids()
 		)
 	}

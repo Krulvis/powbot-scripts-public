@@ -198,8 +198,6 @@ enum class BankLocation(
 		}
 
 	}
-
-
 }
 
 val GE_BANK_BOUNDS = intArrayOf(28, 52, -94, 0, -32, 32)

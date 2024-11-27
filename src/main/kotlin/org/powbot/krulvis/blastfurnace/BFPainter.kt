@@ -5,10 +5,10 @@ import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.krulvis.api.ATContext
 import org.powbot.krulvis.api.extensions.items.Bar
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.mobile.drawing.Rendering
 
-class BFPainter(script: BlastFurnace) : ATPaint<BlastFurnace>(script) {
+class BFPainter(script: BlastFurnace) : KrulPaint<BlastFurnace>(script) {
 
     override fun buildPaint(paintBuilder: PaintBuilder): Paint {
         paintBuilder.addString("Bars:") { script.bar.blastFurnaceCount.toString() }

@@ -14,7 +14,7 @@ import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
 
 @ScriptManifest(
@@ -33,7 +33,7 @@ import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
 ])
 class DaeyaltMiner : KrulScript() {
 
-	override fun createPainter(): ATPaint<*> {
+	override fun createPainter(): KrulPaint<*> {
 		return DaeyaltPainter(this)
 	}
 
@@ -61,7 +61,7 @@ class DaeyaltMiner : KrulScript() {
 
 val ESSENCE = 24706
 
-class DaeyaltPainter(script: DaeyaltMiner) : ATPaint<DaeyaltMiner>(script) {
+class DaeyaltPainter(script: DaeyaltMiner) : KrulPaint<DaeyaltMiner>(script) {
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder.trackInventoryItem(ESSENCE).trackSkill(Skill.Mining).addString("Cycles") { Game.cycle().toString() }.build()
 	}

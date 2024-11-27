@@ -8,8 +8,6 @@ import kotlin.math.min
 
 object Utils {
 
-	private val OSRS_BOX_URL = "https://api.osrsbox.com/equipment/"
-
 	fun sleep(delay: Int) {
 		Thread.sleep(delay.toLong())
 	}

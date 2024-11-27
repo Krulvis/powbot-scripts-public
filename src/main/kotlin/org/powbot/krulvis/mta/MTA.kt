@@ -5,7 +5,7 @@ import org.powbot.api.script.*
 import org.powbot.api.script.tree.SimpleBranch
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.mta.rooms.*
 import org.powbot.krulvis.mta.tree.leafs.GoInside
 import org.powbot.mobile.script.ScriptManager
@@ -53,7 +53,7 @@ class MTA : KrulScript() {
     var startPoints = -1
     var currentPoints = -1
 
-    override fun createPainter(): ATPaint<*> = MTAPainter(this)
+    override fun createPainter(): KrulPaint<*> = MTAPainter(this)
 
     private lateinit var methodComp: TreeComponent<MTA>
 
