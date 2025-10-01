@@ -28,6 +28,10 @@ class SmithAndWait(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Smith a
 			smithXp = Skills.experience(Skill.Smithing)
 			var lastXpGain = System.currentTimeMillis()
 			while (stage.isActive() && action.canPerform() && System.currentTimeMillis() - lastXpGain <= 4000) {
+				if (stage.action != script.currentStage.action) {
+					script.logger.info("Stage completed, exiting smith loop")
+					break
+           		}
 				script.logger.info("Still performing.... lastXpChange=${System.currentTimeMillis() - lastXpGain}ms")
 				if (smithXp < Skills.experience(Skill.Smithing)) {
 					script.logger.info("Got new experience after ${System.currentTimeMillis() - lastXpGain}ms")
