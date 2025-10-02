@@ -91,6 +91,7 @@ enum class TeleportEquipment(
 	ACHIEVEMENT_DIARY_CAPE("Achievement diary Cape", Equipment.Slot.CAPE, 13069, 19476),
 	CRAFTING_CAPE("Crafting cape", Equipment.Slot.CAPE, 9780, 9781),
 	MYTH_CAPE("Mythical cape", Equipment.Slot.CAPE, 22114),
+	DRAKAN_MEDALLION("Drakan's medallion", Equipment.Slot.NECK, 22400),
 	;
 
 	val bestId: Int = ids[0]
@@ -147,33 +148,36 @@ enum class TeleportEquipment(
 		if (w != null && w.interact("Close")) {
 			sleep(Random.nextInt(200, 500))
 		}
-
-		if (equip()) {
+		var teleport = place
+		when (place.lowercase()) {
+			"ferox", "enclave" -> teleport = "Ferox Enclave"
+			"barb", "barbarian" -> teleport = "Barbarian Outpost"
+			"corp" -> teleport = "Corporeal Beast"
+			"ge" -> teleport = "Grand Exchange"
+			"duel" -> teleport = "Duel Arena"
+			"castle", "cw" -> teleport = "Castle Wars"
+			"clan" -> teleport = "Clan Wars"
+			"edge" -> teleport = "Edgeville"
+			"draynor" -> teleport = "Draynor"
+			"monastery" -> teleport = "Monastery"
+			"crafting" -> teleport = "Crafting Guild"
+			"warrior" -> teleport = "Warriors' Guild"
+			"champion" -> teleport = "Champions' Guild"
+			"ranging" -> teleport = "Ranging Guild"
+			"motherlode" -> teleport = "Motherlode Mine"
+			"fishing" -> teleport = "Fishing Guild"
+			"cooking" -> teleport = "Cooking Guild"
+		}
+		val inventoryItem = getInvItem()
+		if (inventoryItem != null && inventoryItem.actions().contains(teleport)) {
+			return inventoryItem.interact(teleport)
+		} else if (equip()) {
 			if (this == SLAYER) {
 				return teleportSlayerRing(place)
 			} else if (this == BURNING) {
 				return teleportBurning(place)
 			}
-			var teleport = place
-			when (place.lowercase()) {
-				"ferox", "enclave" -> teleport = "Ferox Enclave"
-				"barb", "barbarian" -> teleport = "Barbarian Outpost"
-				"corp" -> teleport = "Corporeal Beast"
-				"ge" -> teleport = "Grand Exchange"
-				"duel" -> teleport = "Duel Arena"
-				"castle", "cw" -> teleport = "Castle Wars"
-				"clan" -> teleport = "Clan Wars"
-				"edge" -> teleport = "Edgeville"
-				"draynor" -> teleport = "Draynor"
-				"monastery" -> teleport = "Monastery"
-				"crafting" -> teleport = "Crafting Guild"
-				"warrior" -> teleport = "Warriors' Guild"
-				"champion" -> teleport = "Champions' Guild"
-				"ranging" -> teleport = "Ranging Guild"
-				"motherlode" -> teleport = "Motherlode Mine"
-				"fishing" -> teleport = "Fishing Guild"
-				"cooking" -> teleport = "Cooking Guild"
-			}
+
 			return Equipment.stream().id(*ids).firstOrNull()?.interact(teleport) == true
 		}
 		return false
