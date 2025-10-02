@@ -14,6 +14,7 @@ import org.powbot.krulvis.api.ATContext.getPrice
 import org.powbot.krulvis.api.extensions.*
 import org.powbot.krulvis.api.extensions.items.*
 import org.powbot.krulvis.api.extensions.items.Item
+import org.powbot.krulvis.api.extensions.items.teleports.TeleportEquipment
 import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
 import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
 import org.powbot.krulvis.api.extensions.teleports.*

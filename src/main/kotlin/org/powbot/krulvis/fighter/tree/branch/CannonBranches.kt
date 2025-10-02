@@ -20,7 +20,7 @@ class UsingCannon(script: Fighter) : Branch<Fighter>(script, "UsingCannon?") {
 
 
 	override fun validate(): Boolean {
-		return script.useCannon
+		return script.useCannon && script.cannonTile.distance() <= script.killRadius + script.safespotRadius
 	}
 }
 

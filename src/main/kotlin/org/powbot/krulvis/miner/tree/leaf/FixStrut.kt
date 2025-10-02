@@ -24,6 +24,7 @@ class FixStrut(script: Miner) : Leaf<Miner>(script, "Fixing strut") {
         } else {
             val crate = Objects.stream().at(Tile(3752, 5674, 0)).findFirst()
             crate.ifPresent {
+                it.bounds(-32, 32, -64, 0, -32, 32)
                 if (walkAndInteract(it, "Search")) {
                     waitFor(5000) { Inventory.containsOneOf(Item.HAMMER) }
                 }

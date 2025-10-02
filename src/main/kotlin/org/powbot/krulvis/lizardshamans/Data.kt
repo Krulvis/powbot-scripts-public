@@ -63,7 +63,7 @@ object Data {
 		fun deriveTiles(tile: Tile) = listOf(tile.derive(x, 0), tile.derive(0, y))
 	}
 
-	fun furthestReachableTiles(centerTile: Tile, collisionMap: TransientGetter2D<Int>): List<Tile> {
+	fun furthestReachableTiles(centerTile: Tile): List<Tile> {
 		val directions = Direction.values()  // NW, NE, SW, SE
 		val furthestTiles = MutableList(4) { Pair(centerTile, 0.0) }  // To store the furthest tiles and distances for NW, NE, SW, SE
 
@@ -84,7 +84,7 @@ object Data {
 					val nextTiles = direction.deriveTiles(currentTile)
 
 					nextTiles.forEach { nextTile ->
-						if (!visited[i].contains(nextTile) && !nextTile.blocked(collisionMap) && nextTile.loaded() && nextTile.valid()) {
+						if (!visited[i].contains(nextTile) && !nextTile.blocked() && nextTile.loaded() && nextTile.valid()) {
 							val newDistance = nextTile.distance()
 							visited[i].add(nextTile)
 							queues[i].add(Pair(nextTile, newDistance))

@@ -30,12 +30,11 @@ class Burn(script: Woodcutter) : Leaf<Woodcutter>(script, "Burning") {
 
         waitFor(2000) { !Movement.moving() }
 
-        val flags = Movement.collisionMap(0).flags()
 //        val destination = Movement.destination()
         script.burnTile = Players.local().tile()
 
-        if (script.burnTile?.canMakeFire(flags) != true) {
-            script.burnTile = findGoodSpot(flags)
+        if (script.burnTile?.canMakeFire() != true) {
+            script.burnTile = findGoodSpot()
         }
 
         if (script.burnTile == null) {
@@ -77,8 +76,8 @@ class Burn(script: Woodcutter) : Leaf<Woodcutter>(script, "Burning") {
         }
     }
 
-    fun Tile.canMakeFire(flags: TransientGetter2D<Int>): Boolean {
-        val blocked = blocked(flags)
+    fun Tile.canMakeFire(): Boolean {
+        val blocked = blocked()
         val objBlocking = Objects.stream().at(this).firstOrNull { it.name.isNotEmpty() }
         if (this == script.burnTile && (blocked || objBlocking != null)) {
             script.logger.info("Can't build fire on tile=${script.burnTile}, blocked=$blocked, obj exists=${objBlocking != null}, name=${objBlocking?.name}, id=${objBlocking?.id()}")
@@ -86,7 +85,7 @@ class Burn(script: Woodcutter) : Leaf<Woodcutter>(script, "Burning") {
         return !blocked && (objBlocking == null || objBlocking.id() == script.boundaryId)
     }
 
-    fun findGoodSpot(flags: TransientGetter2D<Int>): Tile? {
+    fun findGoodSpot(): Tile? {
         var longestStreak = 0
         var bestTile: Tile? = null
         val myTile = Players.local().tile()
@@ -95,7 +94,7 @@ class Burn(script: Woodcutter) : Leaf<Woodcutter>(script, "Burning") {
             var streakY = 0
             for (x in myTile.x + 5 downTo myTile.x - 5) {
                 val tile = Tile(x, y)
-                if (tile.canMakeFire(flags)) {
+                if (tile.canMakeFire()) {
                     if (streakY == 0) {
                         startTileY = tile
                     }

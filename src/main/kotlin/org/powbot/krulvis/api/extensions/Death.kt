@@ -2,6 +2,7 @@ package org.powbot.krulvis.api.extensions
 
 import org.powbot.api.Tile
 import org.powbot.api.rt4.*
+import org.powbot.krulvis.api.ATContext.stripTags
 import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.krulvis.api.extensions.Utils.waitFor
 import org.powbot.krulvis.api.extensions.Utils.waitForDistance
@@ -71,11 +72,11 @@ object Death {
 		return itemRetrievalComp().visible()
 	}
 
-	fun retrievalItems(): List<Pair<Component, Int>> =
+	fun retrievalItems(): List<Pair<Component, String>> =
 		Components.stream(RETRIEVAL_ROOT, 3)
 			.filtered { it.itemId() > 0 && it.itemStackSize() > 0 && it.visible() }
 			.toList()
-			.map { it to it.itemId() }
+			.map { it to it.name().stripTags() }
 
 	fun close(): Boolean {
 		val closeComp = Components.stream(RETRIEVAL_ROOT).action("Close").first()

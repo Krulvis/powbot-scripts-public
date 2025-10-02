@@ -15,9 +15,8 @@ import kotlin.random.Random
 @ScriptManifest(
 	name = "krul BonesLooter",
 	description = "Loots and buries bones, then hops to another random F2P world",
-	version = "3.1.7",
+	version = "3.1.9",
 	author = "Krulvis",
-	scriptId = "6f918c67-9913-4702-ad5d-ee6e7d6531c6",
 	priv = true
 )
 @ScriptConfiguration.List(
@@ -35,10 +34,8 @@ class BonesLooter : AbstractScript() {
 	private val boneIds = intArrayOf(532, 526)
 
 	private var boneAREA: Area = Area(
-		Tile(1446, 3611, 0),
-		Tile(1446, 3607, 0),
-		Tile(1449, 3607, 0),
-		Tile(1449, 3611, 0),
+		Tile(1440, 3576, 0),
+		Tile(1426, 3567, 0),
 	)
 
 	private var lastPosition: Tile? = null
@@ -87,7 +84,7 @@ class BonesLooter : AbstractScript() {
 			val emptySlots = Inventory.emptySlotCount()
 			if (it.interact("Take")) {
 				logger.info("Looting bones.")
-				Condition.wait({ Inventory.emptySlotCount() < emptySlots }, 10, 50)
+				Condition.wait({ Inventory.emptySlotCount() < emptySlots }, 250, 20)
 			}
 		}
 	}

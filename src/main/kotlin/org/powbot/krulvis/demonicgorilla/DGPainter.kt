@@ -52,8 +52,8 @@ class DGPainter(script: DemonicGorilla) : KrulPaint<DemonicGorilla>(script) {
 			}
 		}
 		val lootWatcher = script.lootWachter ?: return
-		if (lootWatcher.active)
+		if (lootWatcher.active) {
 			lootWatcher.tile.drawOnScreen(outlineColor = Color.CYAN)
-
+		}
 	}
 }

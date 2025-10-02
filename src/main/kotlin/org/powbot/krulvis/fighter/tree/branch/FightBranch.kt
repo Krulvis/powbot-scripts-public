@@ -20,8 +20,8 @@ class ShouldDodgeProjectile(script: Fighter) : Branch<Fighter>(script, "ShouldDo
 
 	override fun validate(): Boolean {
 		val dest = Movement.destination()
-		val tile = if (dest.valid()) dest else Players.local().tile()
-		return script.projectiles.any { it.destination().distanceTo(tile) <= 1 }
+		val tile = if (dest.valid()) dest else Players.local().trueTile()
+		return script.projectiles.any { it.destination().distanceTo(tile) < 1 }
 	}
 }
 

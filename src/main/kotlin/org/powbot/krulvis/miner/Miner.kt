@@ -22,7 +22,7 @@ import org.powbot.mobile.script.ScriptManager
 	name = "krul Miner",
 	description = "Mines & banks anything, anywhere (supports motherlode)",
 	author = "Krulvis",
-	version = "1.4.9",
+	version = "1.5.2",
 	scriptId = "04f61d39-3abc-420d-84f6-f39243cdf584",
 	markdownFileName = "Miner.md",
 	category = ScriptCategory.Mining

@@ -60,11 +60,11 @@ enum class Container(override val CLOSED_ID: Int, override val OPEN_ID: Int) : I
 
     companion object {
         fun requireEmpty() {
-            values().forEach { it.emptied = false }
+            entries.forEach { it.emptied = false }
         }
 
-        fun emptyAll() = values().all { it.empty() }
+        fun emptyAll() = entries.all { it.empty() }
 
-        fun openAll() = values().all { it.open() }
+        fun openAll() = entries.all { it.open() }
     }
 }

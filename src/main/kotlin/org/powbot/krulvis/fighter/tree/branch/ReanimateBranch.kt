@@ -30,7 +30,7 @@ class ShouldReanimate(script: Fighter) : Branch<Fighter>(script, "Should Reanima
             }
         }
         if (spellHead!!.first.casting()) {
-            spellHead!!.second.interact("Cast")
+            spellHead!!.second.click()
             var reanimated: Npc? = null
             waitFor(10000) {
                 reanimated = Npcs.stream().firstOrNull {

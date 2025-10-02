@@ -1,8 +1,6 @@
 package org.powbot.krulvis.api.script
 
-import kotlinx.coroutines.launch
 import org.powbot.api.EventFlows
-import org.powbot.api.PowDispatchers.Script
 import org.powbot.api.Preferences
 import org.powbot.api.Random
 import org.powbot.api.event.TickEvent
@@ -21,51 +19,44 @@ import org.powbot.mobile.drawing.FrameManager
 
 abstract class KrulScript : TreeScript() {
 
-	override fun onStart() {
-		logger.info("Starting..")
-		addPaint(painter.buildPaint(painter.paintBuilder))
-		FrameManager.addListener(painter)
-		val username = Preferences.getString("username")
-		logger.info("Username: $username")
-		Script.launch {
-			EventFlows.ticks().collect { onTickTimer(it) }
-		}
-		Script.launch {
-			EventFlows.frames().collect {
-				logger.info("FrameEvent")
-			}
-		}
-	}
+    override fun onStart() {
+        logger.info("Starting..")
+        addPaint(painter.buildPaint(painter.paintBuilder))
+        FrameManager.addListener(painter)
+        val username = Preferences.getString("username")
+        logger.info("Username: $username")
+        EventFlows.collectTicks { onTickTimer(it) }
+    }
 
-	val painter by lazy { createPainter() }
+    val painter by lazy { createPainter() }
 
-	abstract fun createPainter(): KrulPaint<*>
+    abstract fun createPainter(): KrulPaint<*>
 
-	var ticks = -1
+    var ticks = -1
 
-	private fun onTickTimer(e: TickEvent) {
-		ticks++
-		Poison.calculateDamage()
-	}
+    private fun onTickTimer(e: TickEvent) {
+        ticks++
+        Poison.calculateDamage()
+    }
 
-	fun waitForTicks(ticks: Int = 1): Boolean {
-		val endTick = this.ticks + ticks
-		val startTimer = System.currentTimeMillis()
-		val waited = waitFor(ticks * 700) { this.ticks >= endTick }
-		logger.info("waitForTicks($ticks) took ${System.currentTimeMillis() - startTimer} ms")
-		return waited
-	}
+    fun waitForTicks(ticks: Int = 1): Boolean {
+        val endTick = this.ticks + ticks
+        val startTimer = System.currentTimeMillis()
+        val waited = waitFor(ticks * 700) { this.ticks >= endTick }
+        logger.info("waitForTicks($ticks) took ${System.currentTimeMillis() - startTimer} ms")
+        return waited
+    }
 
 
-	val timer = Timer()
-	val oddsModifier = OddsModifier()
-	val walkDelay = DelayHandler(500, 700, oddsModifier, "Walk Delay")
-	var nextRun: Int = Random.nextInt(1, 6)
-	val randomHandlers = mutableListOf(BondPouch(), GrandExchangeGuide(), EquipmentScreen(), DeathRisk())
+    val timer = Timer()
+    val oddsModifier = OddsModifier()
+    val walkDelay = DelayHandler(500, 700, oddsModifier, "Walk Delay")
+    var nextRun: Int = Random.nextInt(1, 6)
+    val randomHandlers = mutableListOf(BondPouch(), GrandExchangeGuide(), EquipmentScreen(), DeathRisk())
 
-	override fun poll() {
-		val rh = randomHandlers.firstOrNull { it.validate() }
-		if (rh != null) rh.execute() else super.poll()
-	}
+    override fun poll() {
+        val rh = randomHandlers.firstOrNull { it.validate() }
+        if (rh != null) rh.execute() else super.poll()
+    }
 
 }

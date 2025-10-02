@@ -31,9 +31,8 @@ class CastTelekineticGrab(script: MTA) : Leaf<MTA>(script, "Casting telekinetic 
 
 		script.logger.info("Casting=${casting()}")
 		if (casting() && guardian.interact("cast")) {
-			val flags = TelekineticRoom.getFlags()
 
-			if (!waitFor(2500) { TelekineticRoom.getGuardian(flags).id == MAZE_GUARDIAN_MOVING }) {
+			if (!waitFor(2500) { TelekineticRoom.getGuardian().id == MAZE_GUARDIAN_MOVING }) {
 				script.logger.info("Casting failed?")
 				return
 			}
@@ -44,7 +43,7 @@ class CastTelekineticGrab(script: MTA) : Leaf<MTA>(script, "Casting telekinetic 
 				tile.walk()
 			}
 			script.logger.info("Waiting for guardian to stop moving")
-			val stoppedMoving = waitFor(long()) { TelekineticRoom.getGuardian(flags).id != MAZE_GUARDIAN_MOVING }
+			val stoppedMoving = waitFor(long()) { TelekineticRoom.getGuardian().id != MAZE_GUARDIAN_MOVING }
 			script.logger.info("Guardian stopped moving = $stoppedMoving")
 		}
 

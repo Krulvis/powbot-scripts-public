@@ -13,7 +13,6 @@ import org.powbot.mobile.drawing.Rendering
 @ScriptManifest(name = "Krul Test Loop", version = "1.0.1", description = "", priv = true)
 class LoopScript : AbstractScript() {
 
-	var collisionMap: Array<IntArray> = emptyArray()
 	var npc: Npc = Npc.Nil
 	var projectiles = emptyList<Projectile>()
 

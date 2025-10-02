@@ -4,7 +4,7 @@ import org.powbot.api.requirement.ItemRequirement
 import org.powbot.api.requirement.Requirement
 import org.powbot.api.rt4.Bank
 import org.powbot.krulvis.api.extensions.Utils.waitFor
-import org.powbot.krulvis.api.extensions.items.ITeleportItem
+import org.powbot.krulvis.api.extensions.items.teleports.ITeleportItem
 import org.powbot.krulvis.api.extensions.items.Item
 
 interface ItemRequirement : Requirement {
