@@ -16,24 +16,23 @@ import org.powbot.util.TransientGetter2D
 class DropToad(script: ChompyBird) : Leaf<ChompyBird>(script, "DropToad") {
 	override fun execute() {
 		val invToads = Inventory.stream().name("Bloated toad").count().toInt()
-		val flags = Movement.collisionMap(me.floor()).flags()
 		script.placementTile = me.tile()
 		if (Npcs.stream().name("Bloated toad").at(script.placementTile).isNotEmpty()) {
 			script.logger.info("Can't place on current tile, finding more optimal tile")
 			val layingToads = getGroundBloated()
-			script.placementTile = findStartingPointWithEmptySlots(layingToads, flags, invToads)
+			script.placementTile = findStartingPointWithEmptySlots(layingToads, invToads)
 		}
 
-		if (script.placementTile.distance() > 0 && Movement.step(script.placementTile, 0)) {
-			waitForDistance(script.placementTile) { me.tile() == script.placementTile }
-		}
+        if (script.placementTile.distance() > 0 && Movement.step(script.placementTile, 0)) {
+            waitForDistance(script.placementTile) { me.tile() == script.placementTile }
+        }
 
 		val placementTimer = Timer(1500 * invToads)
 		var toad = getInvToad()
 		script.logger.info("Found toad = ${toad.valid()}")
 		while (!placementTimer.isFinished() && toad.valid()) {
 			val tile = me.tile()
-			if (tile.canPlace(getGroundBloated(), flags) && toad.interact("Drop")) {
+			if (tile.canPlace(getGroundBloated()) && toad.interact("Drop")) {
 				waitFor(1200) { me.tile() != tile && !Inventory.itemAt(toad.inventoryIndex).valid() }
 				sleep(250)
 			}
@@ -42,26 +41,26 @@ class DropToad(script: ChompyBird) : Leaf<ChompyBird>(script, "DropToad") {
 
 	}
 
-	private fun getGroundBloated() = Npcs.get({ it.name == "Bloated Toad" }).map { it.tile() }
+	private fun getGroundBloated() = Npcs.stream().name("Bloated Toad").map { it.tile() }
 	private fun getInvToad() = Inventory.stream().name("Bloated toad").first()
 
-	private fun Tile.canPlace(toads: List<Tile>, flags: TransientGetter2D<Int>): Boolean {
-		return toads.none { it == this } && !blocked(flags)
+	private fun Tile.canPlace(toads: List<Tile>): Boolean {
+		return toads.none { it == this } && !blocked()
 	}
 
-	private fun findStartingPointWithEmptySlots(toads: List<Tile>, flags: TransientGetter2D<Int>, requiredEmptyTiles: Int = 3): Tile {
+	private fun findStartingPointWithEmptySlots(toads: List<Tile>, requiredEmptyTiles: Int = 3): Tile {
 		val directions = listOf(
 			Pair(0, 1), Pair(1, 0), Pair(0, -1), Pair(-1, 0)
 		) // Right, Down, Left, Up
 		var steps = 1
 		var tile = me.tile() //center
-		if (tile.isConsecutiveEmpty(toads, flags, requiredEmptyTiles)) return tile
+		if (tile.isConsecutiveEmpty(toads,  requiredEmptyTiles)) return tile
 
 		while (steps < 10) {
 			for (dir in directions) {
 				for (i in 0 until steps) {
 					tile = tile.derive(dir.first, dir.second)
-					if (tile.isConsecutiveEmpty(toads, flags, requiredEmptyTiles)) return tile
+					if (tile.isConsecutiveEmpty(toads,  requiredEmptyTiles)) return tile
 				}
 				// Alternate step increments between vertical and horizontal moves
 				if (dir == Pair(0, 1) || dir == Pair(0, -1)) {
@@ -72,9 +71,9 @@ class DropToad(script: ChompyBird) : Leaf<ChompyBird>(script, "DropToad") {
 		return Tile.Nil
 	}
 
-	fun Tile.isConsecutiveEmpty(toads: List<Tile>, flags: TransientGetter2D<Int>, length: Int): Boolean {
+	fun Tile.isConsecutiveEmpty(toads: List<Tile>, length: Int): Boolean {
 		for (i in 0 until length) {
-			if (!derive(-i, 0).canPlace(toads, flags)) {
+			if (!derive(-i, 0).canPlace(toads)) {
 				return false
 			}
 		}

@@ -42,7 +42,7 @@ class DaeyaltMiner : KrulScript() {
 
 	val herbs = arrayOf("Guam", "Irit", "Harralander", "Marrentill")
 	val tar = "Swamp tar"
-	var mine = GameObject.Nil
+	lateinit var mine: GameObject
 
 	fun canTickManip(): Boolean = Inventory.stream().name(*herbs).isNotEmpty() && Inventory.stream().name(tar).isNotEmpty()
 

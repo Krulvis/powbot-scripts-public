@@ -23,7 +23,7 @@ import org.powbot.mobile.service.ScriptUploader
 	name = "krul Thiever",
 	description = "Pickpockets any NPC",
 	author = "Krulvis",
-	version = "1.1.6",
+	version = "1.1.7",
 	markdownFileName = "Thiever.md",
 	scriptId = "e6043ead-e607-4385-b67a-a86dcf699204",
 	category = ScriptCategory.Thieving
@@ -91,6 +91,12 @@ import org.powbot.mobile.service.ScriptUploader
 			optionType = OptionType.BOOLEAN
 		),
 		ScriptConfiguration(
+			name = "Shadow veil",
+			description = "Cast shadow veil?",
+			defaultValue = "false",
+			optionType = OptionType.BOOLEAN
+		),
+		ScriptConfiguration(
 			name = "Stop on wandering",
 			description = "Stop script when the NPC is further than max distance from center tile?",
 			defaultValue = "false",
@@ -118,6 +124,7 @@ class Thiever : KrulScript() {
 		logger.info("FreeSlotCount=$freeSlots")
 	}
 
+	val shawdowVeil by lazy { getOption<Boolean>("Shadow veil") }
 	val centerTile by lazy { getOption<Tile>("CenterTile") }
 	val food by lazy { Food.valueOf(getOption("Food")) }
 	val freeSlots by lazy { getOption<Int>("MinFreeSpace") }
@@ -138,9 +145,9 @@ class Thiever : KrulScript() {
 	var droppables: List<Item> = emptyList()
 	val stunTimer = Timer(3000)
 
-	fun getTarget(): Npc? {
+	fun getTarget(): Npc {
 		return Npcs.stream().within(centerTile, maxDistance).name(*target.map { it.name }.toTypedArray())
-			.nearest(centerTile).firstOrNull()
+			.nearest(centerTile).first()
 	}
 
 	val ROGUE_GEAR = listOf("Rogue mask", "Rogue top", "Rogue trousers", "Rogue gloves", "Rogue boots")
@@ -157,7 +164,7 @@ class Thiever : KrulScript() {
 	fun onGameActionEvent(evt: GameActionEvent) {
 		if (evt.rawOpcode == 11 || evt.opcode() == GameActionOpcode.InteractNpc) {
 			if (ScriptManager.state() == ScriptState.Running && prepare && Game.singleTapEnabled())
-				getTarget()?.click()
+				getTarget().click()
 		}
 	}
 

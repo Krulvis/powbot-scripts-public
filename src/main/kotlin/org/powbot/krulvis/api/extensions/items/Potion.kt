@@ -38,8 +38,15 @@ enum class Potion(
     ANTIFIRE_EXTENDED(-1, -1, 11951, 11953, 11955, 11957),
     ANTIFIRE(-1, -1, 2452, 2454, 2456, 2458),
     ANTIPOISON(-1, -1, 2446, 175, 177, 179),
-    ANTI_VENOM(-1, -1, 12905, 12907, 12909, 12911),
-    ANTI_VENOM_PLUS(-1, -1, 12913, 12915, 12917, 12919),
+    ANTI_VENOM(-1, -1, 12905, 12907, 12909, 12911) {
+        override val itemName: String = "Anti-venom"
+    },
+    ANTI_VENOM_PLUS(-1, -1, 12913, 12915, 12917, 12919) {
+        override val itemName: String = "Anti-venom+"
+    },
+    ANTI_VENOM_PLUS_EXTENDED(-1, -1, 29824, 29827, 29830, 29833) {
+        override val itemName: String = "Extended anti-venom+"
+    },
     SUPER_ANTIPOISON(-1, -1, 2448, 181, 183, 185),
     SUPER_RESTORE(Constants.SKILLS_PRAYER, -1, 3024, 3026, 3028, 3030)
     ;
@@ -59,7 +66,7 @@ enum class Potion(
             ATTACK, STRENGTH, DEFENCE, COMBAT -> 3 + floor(Skills.realLevel(skill) / 10.0).toInt()
             SUPER_ATTACK, SUPER_STRENGTH, SUPER_DEFENCE, SUPER_COMBAT,
             DIVINE_SUPER_COMBAT, DIVINE_SUPER_ATTACK, DIVINE_SUPER_STRENGTH, DIVINE_SUPER_DEFENCE
-            -> 5 + floor(Skills.realLevel(skill) * 0.15).toInt()
+                -> 5 + floor(Skills.realLevel(skill) * 0.15).toInt()
 
             else -> {
                 restore
@@ -89,11 +96,20 @@ enum class Potion(
     }
 
 
+    /**
+     * Determines whether a potion needs to be used based on the provided threshold percentage.
+     *
+     * @param percentage The threshold percentage used to evaluate whether the potion should be consumed.
+     *                   This is context-dependent and differs between potions (e.g., stamina, prayer, poison).
+     *                   Higher means it will need to restore faster
+     * @return `true` if the potion needs to be consumed based on the given percentage,
+     *         otherwise `false`.
+     */
     fun needsRestore(percentage: Int): Boolean {
         return when (this) {
             ANTIFIRE_EXTENDED, ANTIFIRE -> !isProtectedFromFire()
             ANTIPOISON, SUPER_ANTIPOISON -> Combat.isPoisoned()
-            ANTI_VENOM, ANTI_VENOM_PLUS -> Poison.envenomed() && Poison.nextDamage >= 8
+            ANTI_VENOM, ANTI_VENOM_PLUS, ANTI_VENOM_PLUS_EXTENDED -> Poison.envenomed() && Poison.nextDamage >= 8
             PRAYER, SUPER_RESTORE -> {
                 val rl = Skills.realLevel(skill)
                 val cl = Skills.level(skill)

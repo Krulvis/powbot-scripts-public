@@ -90,8 +90,7 @@ class LizardShamans : KillerScript(false), UniqueLootTracker {
 
 	private fun findEscapeTile() {
 		val myTile = me.tile()
-		val collisionMap = Movement.collisionMap(myTile.floor).flags()
-		val tiles = Data.furthestReachableTiles(myTile, collisionMap)
+		val tiles = Data.furthestReachableTiles(myTile)
 		escapeTiles.addAll(tiles.filterNot { it.distance() < 3 }.map {
 			val (a, b, c) = Data.lineEquation(myTile, it)
 			it to Data.averagePerpendicularDistance(spawns + currentTarget, a, b, c)

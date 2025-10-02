@@ -14,8 +14,9 @@ class Pickpocket(script: Thiever) : Leaf<Thiever>(script, "Pickpocket") {
 
 	override fun execute() {
 		val target = script.getTarget()
-		if (!script.stunned() && target != null && Bank.close()) {
+		if (!script.stunned() && target.valid() && Bank.close()) {
 			val xp = Skills.experience(Constants.SKILLS_THIEVING)
+            target.bounds(-32, 32, -132, -10, -22, 22)
 			if (walkAndInteract(target, "Pickpocket", script.useMenu)) {
 				waitForDistance(target) {
 					target.distance() <= 1

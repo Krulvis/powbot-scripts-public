@@ -22,13 +22,12 @@ class FinishedMaze(script: MTA) : Branch<MTA>(script, "Finished maze?") {
 		script.logger.info("guardian in viewport = ${guardian.inViewport()}, actions=${guardian.actions}")
 		if (guardian.interact("New-maze")) {
 			TelekineticRoom.resetRoom()
-			val flags = TelekineticRoom.getFlags()
-			waitForDistance(guardian) { TelekineticRoom.getGuardian(flags).id != guardian.id }
+			waitForDistance(guardian) { TelekineticRoom.getGuardian().id != guardian.id }
 		}
 	}
 
 	override fun validate(): Boolean {
-		return TelekineticRoom.getGuardian(TelekineticRoom.getFlags()).actions.contains("New-maze")
+		return TelekineticRoom.getGuardian().actions.contains("New-maze")
 	}
 }
 
@@ -53,7 +52,7 @@ class ShouldWalkToCenter(script: MTA) : Branch<MTA>(script, "Should walk to cent
 	}
 
 	override fun validate(): Boolean {
-		return !TelekineticRoom.getGuardian(TelekineticRoom.getFlags()).valid()
+		return !TelekineticRoom.getGuardian().valid()
 	}
 }
 

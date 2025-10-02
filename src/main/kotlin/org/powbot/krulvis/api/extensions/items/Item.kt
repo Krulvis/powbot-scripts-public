@@ -10,7 +10,9 @@ import org.powbot.api.rt4.stream.item.ItemStream
 import org.powbot.krulvis.api.ATContext.stripNumbersAndCharges
 import org.powbot.krulvis.api.extensions.Utils.waitFor
 import org.powbot.mobile.rscache.loader.ItemLoader
+import org.slf4j.LoggerFactory
 
+private val logger = LoggerFactory.getLogger("Item")
 interface Item {
 
 	val ids: IntArray
@@ -23,8 +25,10 @@ interface Item {
 
 	fun getNotedIds(): IntArray = ids.map { it + 1 }.toIntArray()
 
-
 	fun notedInBank(): Boolean = Bank.stream().id(*getNotedIds()).isNotEmpty()
+
+	fun nameMatches(item: Item) = nameMatches(item.name())
+	fun nameMatches(name: String) = name.stripNumbersAndCharges() == itemName
 
 	fun <S : SimpleStream<Item, S, FilterParameters>> ItemStream<S>.filterItems(allowNoted: Boolean = false) =
 		filtered {
@@ -32,7 +36,7 @@ interface Item {
 			if (allowNoted) {
 				ids += getNotedIds()
 			}
-			it.name().stripNumbersAndCharges() == itemName || it.id in ids
+			nameMatches(it) || it.id in ids
 		}
 
 	fun inInventory(): Boolean =
@@ -83,6 +87,7 @@ interface Item {
 
 	fun withdrawExact(amount: Int, worse: Boolean = false, wait: Boolean = true): Boolean {
 		val currentAmount = getCount(false)
+		logger.info("WithdrawExact: $itemName, amount=$amount, currentAmount=$currentAmount, worse=$worse")
 		if (currentAmount == amount) {
 			return true
 		} else if (currentAmount > amount) {

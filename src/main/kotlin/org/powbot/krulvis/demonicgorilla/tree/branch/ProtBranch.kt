@@ -11,7 +11,7 @@ import org.powbot.krulvis.demonicgorilla.DemonicGorilla
 
 class ShouldSwitchProtPray(script: DemonicGorilla) : Branch<DemonicGorilla>(script, "ShouldSwitchProtPray?") {
 	override val failedComponent: TreeComponent<DemonicGorilla> =
-		CanLoot(script, ShouldDodgeProjectile(script, ShouldCastResurrect(script)))
+		CanLoot(script, ShouldDodgeProjectile(script, IsKilling(script)))
 	override val successComponent: TreeComponent<DemonicGorilla> = SimpleLeaf(script, "SwitchPray") {
 		Prayer.prayer(script.protectionPrayer, true)
 		protTimer.reset()

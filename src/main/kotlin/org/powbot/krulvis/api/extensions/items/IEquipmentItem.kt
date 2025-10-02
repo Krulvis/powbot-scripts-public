@@ -13,74 +13,74 @@ import org.slf4j.LoggerFactory
 private val logger = LoggerFactory.getLogger("EquipmentItem")
 
 class EquipmentItem(override val id: Int, override val slot: Equipment.Slot) : IEquipmentItem {
-	override val ids: IntArray = intArrayOf(id)
-	override val itemName: String by lazy { ItemLoader.lookup(id)!!.name().stripNumbersAndCharges() }
-	override val stackable: Boolean by lazy { ItemLoader.lookup(id)!!.stackable() }
+    override val ids: IntArray = intArrayOf(id)
+    override val itemName: String by lazy { ItemLoader.lookup(id)?.name()?.stripNumbersAndCharges() ?: "NullItem" }
+    override val stackable: Boolean by lazy { ItemLoader.lookup(id)?.stackable() ?: false }
 
-	companion object {
-		val Nil = EquipmentItem(-1, Equipment.Slot.QUIVER)
-	}
+    companion object {
+        val Nil = EquipmentItem(-1, Equipment.Slot.QUIVER)
+    }
 }
 
 interface IEquipmentItem : Item {
 
-	val slot: Equipment.Slot
+    val slot: Equipment.Slot
 
-	override fun hasWith(): Boolean = inInventory() || inEquipment()
+    override fun hasWith(): Boolean = inInventory() || inEquipment()
 
-	override fun getCount(countNoted: Boolean): Int {
-		return getInventoryCount(false) + getEquipmentCount()
-	}
+    override fun getCount(countNoted: Boolean): Int {
+        return getInventoryCount(false) + getEquipmentCount()
+    }
 
-	fun withdrawAndEquip(stopIfOut: Boolean = false): Boolean {
-		if (inEquipment()) {
-			return true
-		} else if (!inInventory()) {
-			if (Bank.withdrawModeNoted(false) && inBank()
-				&& withdrawExact(1, true)
-			) {
-				waitFor(5000) { inInventory() }
-			} else if (!inBank() && stopIfOut) {
-				ScriptManager.script()!!.logger.warn("Stopping script due to being out of: $itemName")
-				ScriptManager.stop()
-			}
-		}
-		if (inInventory()) {
-			logger.info("withdrawAndEquip: $this, inInventory=true")
-			return equip(true)
-		}
-		return inEquipment()
-	}
+    fun withdrawAndEquip(stopIfOut: Boolean = false): Boolean {
+        if (inEquipment()) {
+            return true
+        } else if (!inInventory()) {
+            if (Bank.withdrawModeNoted(false) && inBank()
+                && withdrawExact(1, true)
+            ) {
+                waitFor(5000) { inInventory() }
+            } else if (!inBank() && stopIfOut) {
+                ScriptManager.script()!!.logger.warn("Stopping script due to being out of: $itemName")
+                ScriptManager.stop()
+            }
+        }
+        if (inInventory()) {
+            logger.info("withdrawAndEquip: $this, inInventory=true")
+            return equip(true)
+        }
+        return inEquipment()
+    }
 
-	fun org.powbot.api.rt4.Item.equipAction(): String? {
-		val actions = actions()
-		return actions.firstOrNull { it in listOf("Wear", "Wield", "Equip") }
-	}
+    fun org.powbot.api.rt4.Item.equipAction(): String? {
+        val actions = actions()
+        return actions.firstOrNull { it in listOf("Wear", "Wield", "Equip") }
+    }
 
-	fun equip(wait: Boolean = true): Boolean {
-		if (inEquipment()) return true
-		if (inInventory() && (Bank.opened() || Game.tab(Game.Tab.INVENTORY))) {
-			val item = Inventory.stream().nameContains(itemName).first()
-			val action = item.equipAction()
-			ScriptManager.script()!!.logger.info(
-				"Equipping $itemName action=$action, actions=[${
-					item.actions().joinToString()
-				}]"
-			)
-			if (if (action == null || !wait) item.click() else item.interact(action)) {
-				if (wait) waitFor(2000) { inEquipment() } else return true
-			}
-		} else {
-			logger.info("Equipping $itemName is not in inventory, ids=[${ids.joinToString()}]")
-		}
-		return inEquipment()
-	}
+    fun equip(wait: Boolean = true): Boolean {
+        if (inEquipment()) return true
+        if (inInventory() && (Bank.opened() || Game.tab(Game.Tab.INVENTORY))) {
+            val item = Inventory.stream().nameContains(itemName).first()
+            val action = item.equipAction()
+            ScriptManager.script()!!.logger.info(
+                "Equipping $itemName action=$action, actions=[${
+                    item.actions().joinToString()
+                }]"
+            )
+            if (if (action == null || !wait) item.click() else item.interact(action)) {
+                if (wait) waitFor(2000) { inEquipment() } else return true
+            }
+        } else {
+            logger.info("Equipping $itemName is not in inventory, ids=[${ids.joinToString()}]")
+        }
+        return inEquipment()
+    }
 
-	fun dequip(): Boolean {
-		if (!inEquipment()) {
-			return true
-		}
-		val equipped = Equipment.stream().nameContains(itemName).first()
-		return equipped.click()
-	}
+    fun dequip(): Boolean {
+        if (!inEquipment()) {
+            return true
+        }
+        val equipped = Equipment.stream().nameContains(itemName).first()
+        return equipped.click()
+    }
 }

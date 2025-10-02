@@ -73,10 +73,17 @@ class TestScript : KrulScript() {
 	val VARP_AGA_RESIN: Int = 4415
 	val VARP_MOX_RESIN: Int = 4416
 	var PROC_MASTERING_MIXOLOGY_BUILD_REAGENTS: Int = 7064
-	var rift = GameObject.Nil
 	override val rootComponent: TreeComponent<*> = SimpleLeaf(this, "TestLeaf") {
-		val spider = Objects.stream(15, GameObject.Type.INTERACTIVE).name("Polishing wheel").first()
-		logger.info(spider.toString())
+		val inv = Inventory.get()
+		inv.forEach {
+			logger.info("Inventory name=${it.name()}, id=${it.id}")
+		}
+
+		val equipment = Equipment.get()
+		equipment.forEach {
+			logger.info("Equipment name=${it.name()}, id=${it.id}")
+		}
+
 	}
 
 	@Subscribe

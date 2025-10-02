@@ -1,6 +1,6 @@
 plugins {
     id 'java'
-    id 'org.jetbrains.kotlin.jvm' version '1.7.10'
+    id 'org.jetbrains.kotlin.jvm' version '1.9.22'
 }
 
 group 'org.powbot.krulvis'
@@ -14,8 +14,8 @@ repositories {
 
 
 dependencies {
-    implementation('org.powbot:client-sdk-loader:[1.+,1.0.99-SNAPSHOT)')
-    implementation('org.powbot:client-sdk:[1.+,1.0.99-SNAPSHOT)')
+    implementation('org.powbot:client-sdk-loader:3.+')
+    implementation('org.powbot:client-sdk:3.+')
     implementation 'com.google.guava:guava:31.1-jre'
     implementation 'org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4'
     implementation "com.fasterxml.jackson.core:jackson-core:2.13.3"
