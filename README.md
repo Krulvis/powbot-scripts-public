@@ -14,8 +14,6 @@ Every script contains a `main` function that starts the script using the `Abstra
 ## How to contribute?
 
 Whenever you have work that you would like to contribute, create a PR into
-the [develop](/powbot/krulvis-scripts/tree/develop) branch.
-The main branch is what's currently live on the SDN.
-I will not accept PR's in that branch as its set-up in a way
-that the powbot automatically merges PR in that branch.
+the main branch.
+
 
