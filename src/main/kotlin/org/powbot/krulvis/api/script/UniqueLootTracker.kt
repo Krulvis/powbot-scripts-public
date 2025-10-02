@@ -6,14 +6,14 @@ import org.powbot.api.rt4.Bank
 import org.powbot.api.rt4.DepositBox
 import org.powbot.api.script.ScriptState
 import org.powbot.krulvis.api.extensions.items.Item.Companion.VIAL
-import org.powbot.krulvis.api.extensions.items.TeleportEquipment
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.extensions.items.teleports.TeleportEquipment
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.mobile.script.ScriptManager
 
 interface UniqueLootTracker {
 
 	val requiredIds: IntArray
-	val painter: ATPaint<*>
+	val painter: KrulPaint<*>
 
 	@Subscribe
 	fun onInventoryChange(evt: InventoryChangeEvent) {

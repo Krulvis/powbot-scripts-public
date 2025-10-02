@@ -9,15 +9,18 @@ import org.powbot.api.script.tree.SimpleLeaf
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.mobile.drawing.Rendering
 import kotlin.math.abs
 
 @ScriptManifest("giantFoundryDebug", "Debug GiantFoundry", priv = true)
 class GiantFoundryDebug : KrulScript() {
-	override fun createPainter(): ATPaint<*> = DebugPainter(this)
+	override fun createPainter(): KrulPaint<*> = DebugPainter(this)
+
+	var stages = emptyArray<Stage>()
 	override val rootComponent: TreeComponent<*> = SimpleLeaf(this, "Debug") {
 		sleep(1000)
+		stages = Stage.parseStages()
 		val selectionContainer = mouldWidget().component(MOULD_SELECTION_CONTAINER)
 		selectionContainer.firstOrNull { it?.textColor() == MOULD_SELECTED_COLOR } ?: Component.Nil
 		val index = selectionContainer.indexOf(selectionContainer)
@@ -42,9 +45,11 @@ class GiantFoundryDebug : KrulScript() {
 	}
 }
 
-class DebugPainter(script: GiantFoundryDebug) : ATPaint<GiantFoundryDebug>(script) {
+class DebugPainter(script: GiantFoundryDebug) : KrulPaint<GiantFoundryDebug>(script) {
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		paintBuilder
+			.addString("Heat") { "${currentHeat()}" }
+			.addString("Progress") { "${currentProgress()}" }
 			.addString("Forte") { "open=${MouldType.Forte.open()}, selected=${MouldType.Forte.selected()}, selectedTexture=${MouldType.Forte.selectedTexture()}" }
 			.addString("Blades") { "open=${MouldType.Blades.open()}, selected=${MouldType.Blades.selected()}, selectedTexture=${MouldType.Blades.selectedTexture()}" }
 			.addString("Tips") { "open=${MouldType.Tips.open()}, selected=${MouldType.Tips.selected()}, selectedTexture=${MouldType.Tips.selectedTexture()}" }

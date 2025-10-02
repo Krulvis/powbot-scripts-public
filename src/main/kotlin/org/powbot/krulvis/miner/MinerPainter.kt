@@ -5,10 +5,10 @@ import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.krulvis.api.extensions.items.Item.Companion.BLESSED_BONE_SHARD
 import org.powbot.krulvis.api.extensions.items.Ore
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 
 
-class MinerPainter(script: Miner) : ATPaint<Miner>(script) {
+class MinerPainter(script: Miner) : KrulPaint<Miner>(script) {
 
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		paintBuilder

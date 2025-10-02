@@ -3,7 +3,7 @@ package org.powbot.krulvis.cluesolver
 import org.powbot.api.script.*
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.cluesolver.clues.Clue
 import org.powbot.krulvis.cluesolver.tree.branch.HasClue
 
@@ -32,7 +32,7 @@ class Cluesolver : KrulScript() {
     val obtainClue: Boolean by lazy { getOption(OBTAIN_CLUE_CONFIG) }
     val obtainingLevel: Clue.Level by lazy { Clue.Level.valueOf(getOption(CLUE_LEVEL_CONFIG)) }
 
-    override fun createPainter(): ATPaint<*> = CluePainter(this)
+    override fun createPainter(): KrulPaint<*> = CluePainter(this)
 
     override val rootComponent: TreeComponent<*> = HasClue(this)
 

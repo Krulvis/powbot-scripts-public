@@ -11,7 +11,7 @@ import org.powbot.api.script.ScriptManifest
 import org.powbot.api.script.ScriptState
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.darkcrabs.tree.branch.ShouldHop
 import org.powbot.mobile.script.ScriptManager
 
@@ -42,7 +42,7 @@ class DarkCrabs : KrulScript() {
         caught = (currentXp - startXp) / 130
     }
 
-    override fun createPainter(): ATPaint<*> = DarkCrabPainter(this)
+    override fun createPainter(): KrulPaint<*> = DarkCrabPainter(this)
 
     override val rootComponent: TreeComponent<*> = ShouldHop(this)
 }

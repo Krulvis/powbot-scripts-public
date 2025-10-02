@@ -42,4 +42,5 @@ object RunePouch : Item {
 	private fun depositComp() = Components.stream(ROOT_ID).action("Deposit runes").first()
 
 	fun isRunePouch(item: Item) = item.ids.any { it in ids }
+
 }

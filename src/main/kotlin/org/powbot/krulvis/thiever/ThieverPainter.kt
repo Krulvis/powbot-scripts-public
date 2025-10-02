@@ -5,9 +5,9 @@ import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.krulvis.api.ATContext.me
 import org.powbot.krulvis.api.extensions.items.Item.Companion.COINS
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 
-class ThieverPainter(script: Thiever) : ATPaint<Thiever>(script) {
+class ThieverPainter(script: Thiever) : KrulPaint<Thiever>(script) {
 
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder

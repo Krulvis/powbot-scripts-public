@@ -29,6 +29,7 @@ class TakeBars(script: BlastFurnace) : Leaf<BlastFurnace>(script, "Take bars") {
     override fun execute() {
         val gloves = Inventory.stream().id(ICE_GLOVES, SMITHS_GLOVES).firstOrNull()
         val takeWidget = takeWidget()
+        val clickComp = takeWidget.components().maxByOrNull { it.componentCount() }
         debug("Take widget=$takeWidget")
         Bank.close()
         if (gloves != null) {
@@ -37,16 +38,16 @@ class TakeBars(script: BlastFurnace) : Leaf<BlastFurnace>(script, "Take bars") {
             if (equip) {
                 waitFor { !Inventory.containsOneOf(ICE_GLOVES, SMITHS_GLOVES) }
             }
-        } else if (takeWidget.valid()) {
+        } else if (clickComp?.visible() == true) {
             val allButton = takeWidget.components().firstOrNull { it.actions().contains(Quantity.ALL.action) }
             if (allButton != null && !allButton.click()) {
                 debug("Failing to click ALL quantity, even though widget is open")
                 return
             }
 
-            val clickComp = takeWidget.components().maxByOrNull { it.componentCount() }
-            debug("Clicking on Widget[${clickComp?.widgetId()}], $clickComp")
-            if (clickComp != null && clickComp.click() && waitFor { Inventory.isFull() }) {
+
+            debug("Clicking on Widget[${clickComp.widgetId()}], $clickComp")
+            if (clickComp.click() && waitFor { Inventory.isFull() }) {
                 script.waitForBars.stop()
             }
         } else if (Chat.canContinue()) {

@@ -11,7 +11,7 @@ import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.items.Potion
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.Timer
 import org.powbot.krulvis.nmz.tree.branch.OutsideNMZ
 
@@ -51,7 +51,7 @@ import org.powbot.krulvis.nmz.tree.branch.OutsideNMZ
 	]
 )
 class NightmareZone : KrulScript() {
-	override fun createPainter(): ATPaint<*> {
+	override fun createPainter(): KrulPaint<*> {
 		return NMZPainter(this)
 	}
 
@@ -65,7 +65,7 @@ class NightmareZone : KrulScript() {
 
 }
 
-class NMZPainter(script: NightmareZone) : ATPaint<NightmareZone>(script) {
+class NMZPainter(script: NightmareZone) : KrulPaint<NightmareZone>(script) {
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder
 			.addString("Absorption: ") { Potion.getAbsorptionRemainder().toString() }

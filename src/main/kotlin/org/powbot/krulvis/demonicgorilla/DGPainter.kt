@@ -7,12 +7,11 @@ import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.paint.TextPaintItem
 import org.powbot.krulvis.api.extensions.TargetWidget
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.fighter.slayer.Slayer
-import org.powbot.krulvis.demonicgorilla.DemonicGorilla
 import org.powbot.mobile.drawing.Rendering
 
-class DGPainter(script: DemonicGorilla) : ATPaint<DemonicGorilla>(script) {
+class DGPainter(script: DemonicGorilla) : KrulPaint<DemonicGorilla>(script) {
 
 	val slayerTracker = listOf(TextPaintItem { "Monsters left:" }, TextPaintItem { Slayer.taskRemainder().toString() })
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
@@ -53,8 +52,8 @@ class DGPainter(script: DemonicGorilla) : ATPaint<DemonicGorilla>(script) {
 			}
 		}
 		val lootWatcher = script.lootWachter ?: return
-		if (lootWatcher.active)
+		if (lootWatcher.active) {
 			lootWatcher.tile.drawOnScreen(outlineColor = Color.CYAN)
-
+		}
 	}
 }

@@ -11,7 +11,7 @@ import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.extensions.items.Food
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.extensions.Utils
 
 @ScriptManifest(
@@ -33,7 +33,7 @@ class Blackjacking : KrulScript() {
     override val rootComponent: TreeComponent<*> = ShouldEat(this)
 
 
-    override fun createPainter(): ATPaint<*> {
+    override fun createPainter(): KrulPaint<*> {
         return BJPainter(this)
     }
 
@@ -58,7 +58,7 @@ class Blackjacking : KrulScript() {
 }
 
 
-class BJPainter(script: Blackjacking) : ATPaint<Blackjacking>(script) {
+class BJPainter(script: Blackjacking) : KrulPaint<Blackjacking>(script) {
     override fun buildPaint(paintBuilder: PaintBuilder): Paint {
         return paintBuilder
             .trackInventoryItems(995)

@@ -5,11 +5,11 @@ import org.powbot.api.rt4.GameObject
 import org.powbot.api.rt4.Movement
 import org.powbot.api.rt4.Objects
 import org.powbot.api.script.tree.Leaf
-import org.powbot.krulvis.api.extensions.Utils.long
+import org.powbot.krulvis.api.ATContext.walkAndInteract
 import org.powbot.krulvis.api.extensions.Utils.waitFor
 import org.powbot.krulvis.giantsfoundry.Action
 import org.powbot.krulvis.giantsfoundry.GiantsFoundry
-import org.powbot.krulvis.giantsfoundry.currentTemp
+import org.powbot.krulvis.giantsfoundry.currentHeat
 import kotlin.math.abs
 import kotlin.math.min
 
@@ -17,10 +17,17 @@ class FixTemperature(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Fix t
 
 
 	override fun execute() {
-		val action = script.currentAction ?: return
-		val targetHeat = if (action.heats) action.min + 6 else action.max - 5
-		var lastTemp = currentTemp()
+		val action = script.currentStage.action
+		val targetHeat = if (action.heats) action.minHeat + 6 else action.maxHeat - 5
+		var lastTemp = currentHeat()
 		val shouldCool = lastTemp > targetHeat
+		if (shouldCool && lastTemp - targetHeat <= 4) {
+			script.logger.info("Only have to cool 2, just wait in front of action object")
+			if (action.tile.distance() > 3) {
+				Movement.step(action.tile)
+			}
+			return
+		}
 		val actionObj =
 			Objects.stream(30).type(GameObject.Type.INTERACTIVE).name(if (shouldCool) "Waterfall" else "Lava pool")
 				.firstOrNull() ?: return
@@ -33,8 +40,8 @@ class FixTemperature(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Fix t
 
 		var lastStepSize = 5
 		script.logger.info("Performing: $actionStr, on obj=${actionObj.name}, targetHeat=$targetHeat")
-		if (actionObj.use(actionStr)) {
-			waitFor { tempStep(lastTemp, currentTemp(), lastStepSize) }
+		if (walkAndInteract(actionObj, actionStr)) {
+			waitFor { tempStep(lastTemp, currentHeat(), lastStepSize) }
 			var lastTempChangeMS = System.currentTimeMillis()
 
 			while (!done(
@@ -46,7 +53,7 @@ class FixTemperature(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Fix t
 			) {
 				val ms = System.currentTimeMillis() - lastTempChangeMS
 				script.logger.info("Still fixing.... lastTempStep=${ms}ms")
-				val newTemp = currentTemp()
+				val newTemp = currentHeat()
 				if (tempStep(lastTemp, newTemp, lastStepSize)) {
 					lastStepSize = abs(lastTemp - newTemp)
 					script.logger.info("Temperature step size=$lastStepSize, $lastTemp -> $newTemp, $ms ago with target=$targetHeat")
@@ -54,7 +61,7 @@ class FixTemperature(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Fix t
 					lastTemp = newTemp
 					if (lastStepSize > 20 && lastStepSize > abs(lastTemp - targetHeat)) {
 						script.logger.info("Clicking again we're making BIG steps=$lastStepSize")
-						actionObj.use(actionStr)
+						walkAndInteract(actionObj, actionStr)
 						lastStepSize = 5
 					}
 				}
@@ -71,20 +78,10 @@ class FixTemperature(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Fix t
 		}
 	}
 
-	private fun GameObject.use(action: String): Boolean {
-		if (distance() >= 5) {
-			Movement.step(tile)
-			waitFor(long()) { distance() < 5 }
-		}
-		return interact(action)
-	}
 
 	/**
 	 * "If the difference between the new temperature and the last temperature is greater than the last step size, return
 	 * true."
-	 *
-	 * The function is called tempStep. It takes three parameters: lastTemp, newTemp, and lastStepSize. It returns a
-	 * Boolean value
 	 *
 	 * Args:
 	 *   lastTemp (Int): The last temperature that was recorded.
@@ -94,7 +91,7 @@ class FixTemperature(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Fix t
 	private fun tempStep(lastTemp: Int, newTemp: Int, lastStepSize: Int) = abs(newTemp - lastTemp) >= lastStepSize
 
 	private fun done(action: Action, target: Int, cooling: Boolean, lastStepSize: Int): Boolean {
-		val currentHeat = currentTemp()
+		val currentHeat = currentHeat()
 		return if (cooling) {
 			currentHeat <= if (action.heats) target + min(10, lastStepSize) else target
 		} else {

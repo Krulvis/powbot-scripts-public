@@ -12,7 +12,7 @@ import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.containsOneOf
 import org.powbot.krulvis.api.extensions.items.Item.Companion.THREAD
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.combiner.tree.branch.ShouldBank
 import org.powbot.krulvis.combiner.tree.leaf.Combine
 import org.powbot.mobile.rscache.loader.ItemLoader
@@ -58,7 +58,7 @@ import kotlin.random.Random
 	]
 )
 class Combiner : KrulScript() {
-	override fun createPainter(): ATPaint<*> = CombinerPainter(this)
+	override fun createPainter(): KrulPaint<*> = CombinerPainter(this)
 
 	val spamClick by lazy { getOption<Boolean>("Spam Click") }
 	private val spamDelay by lazy { getOption<Int>("Spam Click Delay") }

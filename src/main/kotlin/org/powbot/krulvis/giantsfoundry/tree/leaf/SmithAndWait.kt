@@ -2,12 +2,11 @@ package org.powbot.krulvis.giantsfoundry.tree.leaf
 
 import org.powbot.api.Condition.sleep
 import org.powbot.api.Random
-import org.powbot.api.rt4.GameObject
-import org.powbot.api.rt4.Movement
 import org.powbot.api.rt4.Skills
 import org.powbot.api.rt4.Widgets
 import org.powbot.api.rt4.walking.model.Skill
 import org.powbot.api.script.tree.Leaf
+import org.powbot.krulvis.api.ATContext.walkAndInteract
 import org.powbot.krulvis.api.extensions.Utils.long
 import org.powbot.krulvis.api.extensions.Utils.mid
 import org.powbot.krulvis.api.extensions.Utils.waitFor
@@ -18,30 +17,31 @@ class SmithAndWait(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Smith a
 
 
 	override fun execute() {
-		val action = script.currentAction ?: return
-		val actionObj = action.getObj() ?: return
+		val stage = script.currentStage
+		val action = stage.action
+		val actionObj = action.getObj()
 		script.logger.info("Performing: $action, on obj=${actionObj.name}")
 
 		var smithXp = Skills.experience(Skill.Smithing)
-		if (interaction(actionObj, "Use")) {
+		if (walkAndInteract(actionObj, "Use")) {
 			waitFor(long()) { Skills.experience(Skill.Smithing) > smithXp }
 			smithXp = Skills.experience(Skill.Smithing)
 			var lastXpGain = System.currentTimeMillis()
-			while (action == script.currentAction && action.canPerform() && System.currentTimeMillis() - lastXpGain <= 4000) {
+			while (stage.isActive() && action.canPerform() && System.currentTimeMillis() - lastXpGain <= 4000) {
 				script.logger.info("Still performing.... lastXpChange=${System.currentTimeMillis() - lastXpGain}ms")
 				if (smithXp < Skills.experience(Skill.Smithing)) {
 					script.logger.info("Got new experience after ${System.currentTimeMillis() - lastXpGain}ms")
 					lastXpGain = System.currentTimeMillis()
 					smithXp = Skills.experience(Skill.Smithing)
 				}
-				if (canBoost() && Random.nextDouble() > 0.2 && actionObj.interact("Use")) {
+				if (canBoost() && Random.nextDouble() > 0.2 && walkAndInteract(actionObj, "Use")) {
 					waitFor(mid()) { !canBoost() || !action.canPerform() }
 				}
 				sleep(150)
 			}
 			script.logger.info(
 				"Stopping SMITH" +
-					"\n action changed=${action != script.currentAction}," +
+					"\n stageIsActive=${stage.isActive()}," +
 					"\n canPerform=${action.canPerform()}," +
 					"\n lastXpGain was ${System.currentTimeMillis() - lastXpGain} ms ago"
 			)
@@ -61,11 +61,4 @@ class SmithAndWait(script: GiantsFoundry) : Leaf<GiantsFoundry>(script, "Smith a
 		return false
 	}
 
-	fun interaction(obj: GameObject, action: String): Boolean {
-		if (obj.distance() >= 5) {
-			Movement.step(obj.tile)
-			waitFor(long()) { obj.distance() <= 5 }
-		}
-		return obj.interact(action, useMenu = false)
-	}
 }

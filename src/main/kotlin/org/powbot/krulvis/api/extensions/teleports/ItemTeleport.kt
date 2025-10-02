@@ -3,9 +3,9 @@ package org.powbot.krulvis.api.extensions.teleports
 import org.powbot.api.Tile
 import org.powbot.api.requirement.Requirement
 import org.powbot.krulvis.api.extensions.items.IEquipmentItem
-import org.powbot.krulvis.api.extensions.items.ITeleportItem
-import org.powbot.krulvis.api.extensions.items.TeleportEquipment
-import org.powbot.krulvis.api.extensions.items.TeleportItem
+import org.powbot.krulvis.api.extensions.items.teleports.ITeleportItem
+import org.powbot.krulvis.api.extensions.items.teleports.TeleportEquipment
+import org.powbot.krulvis.api.extensions.items.teleports.TeleportItem
 import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
 import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
 import org.slf4j.Logger
@@ -28,6 +28,8 @@ const val GEM_MINE_KARAMJA_GLOVES = "Gem Mine Karamja Gloves"
 const val KALEB_ACHIEVEMENT_DIARY = "Kaleb Achievement Diary"
 const val GUILD_CRAFTING_CAPE = "Guild Crafting Cape"
 const val GUILD_MYTH_CAPE = "Guild Myth Cape"
+const val DARKMEYER_DRAKAN = "Darkmeyer Drakan"
+const val SALVE_GRAVEYARD_TAB = "Salve Graveyard Tab"
 
 enum class ItemTeleport(
 	val teleportItem: ITeleportItem,
@@ -51,7 +53,9 @@ enum class ItemTeleport(
 	GEM_MINE_KARAMJA_GLOVES(TeleportEquipment.KARAMJA_GLOVES, "Gem Mine", Tile(2841, 9387, 0)),
 	KALEB_ACHIEVEMENT_DIARY(TeleportEquipment.ACHIEVEMENT_DIARY_CAPE, "Kaleb Paramaya", Tile(2861, 2997, 1)),
 	GUILD_CRAFTING_CAPE(TeleportEquipment.CRAFTING_CAPE, "Teleport", Tile(2933, 3283, 0)),
-	GUILD_MYTH_CAPE(TeleportEquipment.MYTH_CAPE, "Teleport", Tile(2456, 2850, 0))
+	GUILD_MYTH_CAPE(TeleportEquipment.MYTH_CAPE, "Teleport", Tile(2456, 2850, 0)),
+	DARKMEYER_DRAKAN(TeleportEquipment.DRAKAN_MEDALLION, "Darkmeyer", Tile(3592, 3337, 0)),
+	SALVE_GRAVEYARD_TAB(TeleportItem.SALVE_GRAVEYARD_TELEPORT, "Break", Tile(3431, 3461, 0)),
 	;
 
 	override val logger: Logger = LoggerFactory.getLogger(javaClass.simpleName)
@@ -73,7 +77,7 @@ enum class ItemTeleport(
 
 	companion object {
 		fun forName(name: String): ItemTeleport? {
-			return ItemTeleport.values().firstOrNull { it.name.replace("_", " ").equals(name, true) }
+			return ItemTeleport.entries.firstOrNull { it.name.replace("_", " ").equals(name, true) }
 		}
 	}
 }

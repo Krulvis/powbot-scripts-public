@@ -31,7 +31,7 @@ class CanCastEnchant(script: MTA) : Branch<MTA>(script, "Can Cast Enchant?") {
 		}
 	}
 
-	var alchable: Item = Item.Nil
+	private lateinit var alchable: Item
 	override fun validate(): Boolean {
 		val bonusShape = EnchantingRoom.getBonusShape().toString()
 		alchable = Inventory.stream().name(bonusShape, "Dragonstone").first()
@@ -57,7 +57,7 @@ class ShouldPickupDragonstone(script: MTA) : Branch<MTA>(script, "E") {
 		}
 	}
 
-	var ds: GroundItem = GroundItem.Nil
+	private lateinit var ds: GroundItem
 
 	private fun getDragonStone() = GroundItems.stream().name("Dragonstone").nearest().first()
 

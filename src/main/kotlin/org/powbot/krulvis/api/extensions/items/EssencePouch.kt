@@ -5,6 +5,7 @@ import org.powbot.api.rt4.Bank
 import org.powbot.api.rt4.Inventory
 import org.powbot.krulvis.api.ATContext.uppercaseFirst
 import org.powbot.krulvis.api.extensions.Utils.waitFor
+import org.powbot.krulvis.api.extensions.items.Item
 import org.powbot.mobile.script.ScriptManager
 
 enum class EssencePouch(val capacity: Int, val stopCapacity: Int, val perfectId: Int, val brokenId: Int) : Item {
@@ -83,8 +84,9 @@ enum class EssencePouch(val capacity: Int, val stopCapacity: Int, val perfectId:
 	companion object {
 		val ids = values().flatMap { it.ids.toList() }.toIntArray()
 		private val names = values().map { it.itemName }
+		val ESSENCE_IDS = intArrayOf(Item.RUNE_ESSENCE, Item.PURE_ESSENCE, Item.DAEYALT_ESSENCE)
 		fun invEssenceCount() =
-			Inventory.stream().id(Item.RUNE_ESSENCE, Item.PURE_ESSENCE, Item.DAEYALT_ESSENCE).count().toInt()
+			Inventory.stream().id(*ESSENCE_IDS).count().toInt()
 
 		fun inInventory() = values().filter { it.getInvItem() != null }
 		fun inBank() = Bank.get { it.name() in names }

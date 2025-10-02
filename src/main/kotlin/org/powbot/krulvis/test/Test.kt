@@ -1,14 +1,45 @@
 package org.powbot.krulvis.test
 
-import org.powbot.api.Tile
+import com.google.common.eventbus.Subscribe
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import org.powbot.api.EventFlows
+import org.powbot.api.event.TickEvent
+import kotlin.reflect.full.findAnnotation
+import kotlin.reflect.full.memberFunctions
+import kotlin.reflect.full.valueParameters
+import kotlin.reflect.jvm.isAccessible
 
+class Test {
+
+	fun onSomething(e: String) {}
+
+	@Subscribe
+	fun onInt(e: Int) {
+
+	}
+
+	@Subscribe
+	fun onTick(e: TickEvent) {
+
+	}
+}
 
 fun main() {
-	val varp = 1040189392
+	val test = Test()
+	val tickListeners = test::class.memberFunctions.filter {
+		it.findAnnotation<Subscribe>() != null && it.valueParameters.size == 1 &&
+			it.valueParameters[0].type.classifier == TickEvent::class
+	}
+	println(tickListeners)
 
-	val c = varp
-	val x = (c.shr(14) and 0x3FFF) + 1
-	val y = (c and 0x3FFF) + 1
-	val z = c.shr(28) and 0x3
-	println("X=${x}, Y=${y}, Z=${z}")
+	tickListeners.forEach { tickListener ->
+		tickListener.isAccessible = true
+
+		CoroutineScope(Dispatchers.Default).launch {
+			EventFlows.ticks().collect { tickListener.call(test, it) }
+		}
+	}
 }
+

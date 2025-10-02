@@ -4,12 +4,15 @@ import org.powbot.api.Notifications
 import org.powbot.api.Random
 import org.powbot.api.Tile
 import org.powbot.api.rt4.*
+import org.powbot.api.rt4.walking.local.LocalPathFinder
+import org.powbot.api.rt4.walking.model.Skill
 import org.powbot.api.script.tree.Branch
 import org.powbot.api.script.tree.SimpleLeaf
 import org.powbot.api.script.tree.TreeComponent
 import org.powbot.krulvis.api.ATContext.currentHP
 import org.powbot.krulvis.api.ATContext.walkAndInteract
 import org.powbot.krulvis.api.extensions.BankLocation.Companion.openNearest
+import org.powbot.krulvis.api.extensions.Timer
 import org.powbot.krulvis.api.extensions.Utils.long
 import org.powbot.krulvis.api.extensions.Utils.sleep
 import org.powbot.krulvis.api.extensions.Utils.waitFor
@@ -19,7 +22,7 @@ import org.powbot.krulvis.thiever.tree.leaf.HandleBank
 import org.powbot.krulvis.thiever.tree.leaf.OpenPouch
 import org.powbot.krulvis.thiever.tree.leaf.Pickpocket
 import org.powbot.mobile.script.ScriptManager
-import kotlin.math.roundToInt
+import kotlin.math.max
 
 class ShouldEat(script: Thiever) : Branch<Thiever>(script, "Should Eat") {
 	override val successComponent: TreeComponent<Thiever> = Eat(script)
@@ -94,24 +97,39 @@ class AtSpot(script: Thiever) : Branch<Thiever>(script, "AtSpot?") {
 			if (walkAndInteract(Objects.stream().action("Climb-down").nearest().firstOrNull(), "Climb-down")) {
 				waitFor(long()) { validate() }
 			}
+		} else if (target.valid() && !reachable) {
+			LocalPathFinder.findPath(target.tile()).traverse()
 		} else {
 			Movement.walkTo(script.centerTile)
 		}
 	}
 
+	var target: Npc = Npc.Nil
+	var reachable = false
+
 	override fun validate(): Boolean {
-		return script.centerTile.distance() <= script.maxDistance
-			&& (script.getTarget()?.distance()?.roundToInt() ?: 99) < 20
+		reachable = true
+		if (script.centerTile.distance() > script.maxDistance) return false
+		target = script.getTarget()
+		if (!target.valid() || target.distance() > script.maxDistance) return false
+		reachable = target.tile().reachable()
+		return reachable
 	}
 }
 
 class ShouldStop(script: Thiever) : Branch<Thiever>(script, "Should stop?") {
 	override val successComponent: TreeComponent<Thiever> = SimpleLeaf(script, "Stop because npc wandered") {
 		Notifications.showNotification("Stopping script because NPC wandered too far away")
-		script.logger.info("Stopping script because NPC wandered too far away \n NPC: $target, tile=${target?.tile()}, centerTile=${script.centerTile}, distance=${target?.distanceTo(script.centerTile)}")
+		script.logger.info(
+			"Stopping script because NPC wandered too far away \n NPC: $target, tile=${target?.tile()}, centerTile=${script.centerTile}, distance=${
+				target?.distanceTo(
+					script.centerTile
+				)
+			}"
+		)
 		ScriptManager.stop()
 	}
-	override val failedComponent: TreeComponent<Thiever> = Pickpocket(script)
+	override val failedComponent: TreeComponent<Thiever> = ShouldCastShadowVeil(script)
 
 	var target: Npc? = null
 
@@ -120,4 +138,21 @@ class ShouldStop(script: Thiever) : Branch<Thiever>(script, "Should stop?") {
 		target = script.getTarget()
 		return (target?.tile()?.distanceTo(script.centerTile) ?: 99).toInt() >= script.maxDistance
 	}
+}
+
+class ShouldCastShadowVeil(script: Thiever) : Branch<Thiever>(script, "ShouldCastShadowVeil?") {
+	override val failedComponent: TreeComponent<Thiever> = Pickpocket(script)
+	override val successComponent: TreeComponent<Thiever> = SimpleLeaf(script, "CastShadowVeil") {
+		if (Bank.close() && Magic.ArceuusSpell.SHADOW_VEIL.cast()) {
+			val resetTime = max(0.6 * Skills.realLevel(Skill.Magic) * 1000, 30000.0).toInt()
+			castTimer.reset(resetTime + Random.nextInt(1000, 5000))
+		}
+	}
+
+	private var castTimer = Timer(1)
+	override fun validate(): Boolean {
+		return script.shawdowVeil && castTimer.isFinished()
+	}
+
+
 }

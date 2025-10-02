@@ -9,8 +9,7 @@ import org.powbot.krulvis.api.ATContext.emptyExcept
 import org.powbot.krulvis.api.ATContext.getCount
 import org.powbot.krulvis.api.ATContext.withdrawExact
 import org.powbot.krulvis.api.extensions.items.Potion
-import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
-import org.powbot.krulvis.api.extensions.requirements.InventoryRequirement
+import org.powbot.krulvis.orbcharger.Orb
 import org.powbot.krulvis.orbcharger.Orb.Companion.COSMIC
 import org.powbot.krulvis.orbcharger.Orb.Companion.UNPOWERED
 import org.powbot.krulvis.orbcharger.OrbCrafter
@@ -19,6 +18,7 @@ import org.powbot.mobile.script.ScriptManager
 class HandleBank(script: OrbCrafter) : Leaf<OrbCrafter>(script, "Handling Bank") {
 	override fun execute() {
 		val missingEquipment = script.equipment.filter { !it.meets() }
+		val missingInventory = script.inventory.filter { !it.meets() }
 		if (!Inventory.emptyExcept(*script.necessaries)) {
 			script.logger.info(
 				"Depositing because inventory contains: ${
@@ -37,14 +37,9 @@ class HandleBank(script: OrbCrafter) : Leaf<OrbCrafter>(script, "Handling Bank")
 				script.logger.info("Out of antipots, stopping script")
 				ScriptManager.stop()
 			}
-		} else if (!script.orb.requirements.all { it.meets() }) {
-			script.logger.info("Missing requirement: ${script.orb.requirements.first { !it.meets() }}")
-			script.orb.requirements.forEach {
-				when (it) {
-					is EquipmentRequirement -> it.item.withdrawAndEquip(true)
-					is InventoryRequirement -> it.withdraw(true)
-				}
-			}
+		} else if (missingInventory.isNotEmpty()) {
+			script.logger.info("Missing Inventory: ${missingInventory.joinToString()}}")
+			missingInventory.forEach { it.withdraw(false) }
 		} else if (cosmicCount() < cosmicCountRequired) {
 			script.logger.info("Withdrawing cosmics=$cosmicCountRequired")
 			Bank.withdrawExact(COSMIC, cosmicCountRequired)
@@ -56,12 +51,16 @@ class HandleBank(script: OrbCrafter) : Leaf<OrbCrafter>(script, "Handling Bank")
 
 	fun cosmicCount(): Int {
 		val pouchCount = RunePouch.runes().firstOrNull { it.first == Rune.COSMIC }?.second ?: 0
-		return pouchCount + Inventory.getCount(COSMIC).toInt()
+		return pouchCount + Inventory.getCount(COSMIC)
 	}
 
+	private val dontCount = arrayOf(
+		Orb.UNPOWERED,
+	)
+
 	val cosmicCountRequired by lazy {
-		val totalSlots = 27
-		var occupiedSlots = script.orb.requirements.count { it is InventoryRequirement }
+		val totalSlots = 28
+		var occupiedSlots = script.inventory.count { it.item.id !in dontCount }
 		if (script.antipoison) occupiedSlots++
 		3 * (totalSlots - occupiedSlots)
 	}

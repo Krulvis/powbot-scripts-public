@@ -18,7 +18,7 @@ import org.powbot.krulvis.api.extensions.teleports.Teleport
 import org.powbot.krulvis.api.extensions.teleports.TeleportMethod
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.CASTLE_WARS_JEWELLERY_BOX
 import org.powbot.krulvis.api.script.KrulScript
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.dagannothkings.Data.EQUIPMENT_PREFIX_OPTION
 import org.powbot.krulvis.dagannothkings.Data.HEAL_GEAR_OPTION
 import org.powbot.krulvis.dagannothkings.Data.HEAL_ON_SPINOLYP_OPTION
@@ -332,7 +332,7 @@ class DagannothKings : KrulScript() {
 	}
 
 
-	override fun createPainter(): ATPaint<*> = DKPaint(this)
+	override fun createPainter(): KrulPaint<*> = DKPaint(this)
 
 	override val rootComponent: TreeComponent<*> = ShouldBank(this)
 }

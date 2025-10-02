@@ -10,7 +10,7 @@ import org.powbot.krulvis.api.extensions.Timer
 import org.powbot.krulvis.api.extensions.requirements.EquipmentRequirement
 import org.powbot.krulvis.api.extensions.teleports.GWD_GHOMMAL_HILT
 import org.powbot.krulvis.api.extensions.teleports.poh.openable.CASTLE_WARS_JEWELLERY_BOX
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.fighter.BANK_TELEPORT_OPTION
 import org.powbot.krulvis.fighter.INVENTORY_OPTION
 import org.powbot.krulvis.fighter.MONSTER_TELEPORT_OPTION
@@ -83,7 +83,7 @@ class Saradomin : GWDScript<Saradomin>(GWD.God.Saradomin) {
 	override fun kcEquipment(): List<EquipmentRequirement> =
 		EquipmentRequirement.forOption(getOption(EQUIPMENT_KILLCOUNT_OPTION))
 
-	override fun createPainter(): ATPaint<*> = SaradominPainter(this)
+	override fun createPainter(): KrulPaint<*> = SaradominPainter(this)
 
 	val deltas = arrayOf(
 		intArrayOf(-8, -5),

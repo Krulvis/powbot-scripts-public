@@ -5,13 +5,12 @@ import org.powbot.api.script.paint.Paint
 import org.powbot.api.script.paint.PaintBuilder
 import org.powbot.api.script.paint.PaintFormatters.round
 import org.powbot.krulvis.api.ATContext.me
-import org.powbot.krulvis.api.script.painter.ATPaint
+import org.powbot.krulvis.api.script.painter.KrulPaint
 import org.powbot.krulvis.api.script.tree.branch.ShouldConsume
 import org.powbot.krulvis.api.script.tree.branch.ShouldConsume.Companion.canConsume
 import org.powbot.mobile.drawing.Rendering
-import kotlin.math.round
 
-class SaradominPainter(script: Saradomin) : ATPaint<Saradomin>(script) {
+class SaradominPainter(script: Saradomin) : KrulPaint<Saradomin>(script) {
 	override fun buildPaint(paintBuilder: PaintBuilder): Paint {
 		return paintBuilder
 			.addString("Tick") { script.ticks.toString() }
