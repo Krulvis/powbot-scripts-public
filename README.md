@@ -8,7 +8,7 @@ from which people can draw inspiration and learn how to write scripts.
 
 Make sure you have gradle installed and then clone this repository.
 Make sure your phone is connected or your android emulation is running.
-Port forward tcp:616669 to you device using the following adb command: `adb forward tcp:61666 tcp:61666`.
+Port forward tcp:61666 to you device using the following adb command: `adb forward tcp:61666 tcp:61666`.
 Every script contains a `main` function that starts the script using the `AbstractScript.StartScript` function.
 
 ## How to contribute?
